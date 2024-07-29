@@ -1,0 +1,10 @@
+/*
+components
+
+*.html
+*.css
+
+!/app
+!/lib
+!/scripts
+!/test

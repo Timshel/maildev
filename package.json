@@ -38,10 +38,9 @@
   },
   "scripts": {
     "start": "node ./bin/maildev",
-    "test": "standard && nyc _mocha --exit --timeout 5000",
-    "test:debug": "nyc _mocha --exit --timeout 5000",
-    "lint": "standard",
-    "lint:fix": "standard --fix",
+    "test": "prettier . -c && nyc _mocha --exit --timeout 5000",
+    "lint": "prettier . -c",
+    "lint:fix": "prettier . -w",
     "dev": "node ./scripts/dev.js && npm run css-watch",
     "css": "sass --style=compressed --no-source-map assets/styles/style.scss:app/styles/style.css",
     "css-watch": "sass --watch --style=compressed --no-source-map assets/styles/style.scss:app/styles/style.css",
@@ -82,15 +81,10 @@
     "sass": "^1.77.8",
     "nodemon": "^3.1.4",
     "nyc": "^17.0.0",
-    "standard": "^17.1.0"
+    "prettier": "^3.3.3"
   },
   "engines": {
     "node": ">=12.0.0"
-  },
-  "standard": {
-    "ignore": [
-      "app/components/"
-    ]
   },
   "nyc": {
     "exclude": [
@@ -103,5 +97,8 @@
       "lcov",
       "text-summary"
     ]
+  },
+  "prettier": {
+    "printWidth": 100
   }
 }
