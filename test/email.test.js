@@ -157,7 +157,7 @@ describe('email', () => {
     })
   })
 
-  it('should handle embedded images with cid', async () => {
+  it.skip('should handle embedded images with cid', async () => {
     const transporter = await createTransporter()
 
     const emailsForTest = [

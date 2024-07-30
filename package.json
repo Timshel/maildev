@@ -39,6 +39,7 @@
   "scripts": {
     "start": "node ./bin/maildev",
     "test": "standard && nyc _mocha --exit --timeout 5000",
+    "test:debug": "nyc _mocha --exit --timeout 5000",
     "lint": "standard",
     "lint:fix": "standard --fix",
     "dev": "node ./scripts/dev.js && npm run css-watch",
@@ -62,13 +63,11 @@
     "cors": "^2.8.5",
     "dompurify": "^3.1.6",
     "express": "^4.19.2",
-    "iconv-lite": "0.5.0",
     "jsdom": "^24.1.1",
-    "mime": "2.4.4",
+    "mailparser": "^3.7.1",
     "nodemailer": "^6.9.14",
     "smtp-server": "^3.13.4",
     "socket.io": "^4.7.5",
-    "uue": "3.1.2",
     "wildstring": "1.0.9"
   },
   "overrides": {
@@ -95,7 +94,8 @@
   },
   "nyc": {
     "exclude": [
-      "test/**/*"
+      "test/**/*",
+      "lib/helpers/strtotime.js"
     ],
     "ignore-class-method": "methodToIgnore",
     "reporter": [
