@@ -5,7 +5,7 @@
  */
 
 const SMTPServer = require("smtp-server").SMTPServer;
-const mailParser = require("./mailparser");
+const mailParser = require("./mailparser").parse;
 const crypto = require("crypto");
 const events = require("events");
 const fs = require("fs");

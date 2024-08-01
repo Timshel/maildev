@@ -13,7 +13,7 @@
       - `fileName` is now `filename`
       - `length` is now `size`
     - Raw headers are now in `headerLines`
-    - `date` and `headers.date` are `Date` object (default to parse time).
+    - Use `Date` object in `mail` and `headers`, in `mail` it will default to current time if missing
     - removed `time`
     - Inline attachment are not added in HTML (was `<div class="mailparser-attachment">`).
     - No mbox support

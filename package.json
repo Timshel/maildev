@@ -42,7 +42,7 @@
     "copy-app": "mkdir -p dist && cp -r ./src/app ./dist/ && rm -rf ./dist/app/styles",
     "start": "npm run build && node ./bin/maildev",
     "test": "prettier . -c && npm run build && nyc _mocha --exit --timeout 5000",
-    "test:debug": "nyc _mocha --exit --timeout 5000",
+    "test:debug": "npm run build && nyc _mocha --exit --timeout 5000",
     "lint": "prettier . -c",
     "lint:fix": "prettier . -w",
     "dev": "node ./scripts/dev.js && npm run css-watch",
@@ -65,6 +65,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@types/mailparser": "^3.4.4",
     "addressparser": "1.0.1",
     "async": "^3.2.3",
     "commander": "^12.1.0",
@@ -85,18 +86,18 @@
   "devDependencies": {
     "@types/express": "^4.17.21",
     "@types/node": "^18.15.3",
-    "ts-node": "^10.9.2",
-    "ts-node-dev": "^2.0.0",
-    "typescript": "^5.5.4",
     "expect": "^29.7.0",
     "http-proxy-middleware": "^3.0.0",
     "jest": "^29.7.0",
     "jest-mock": "^29.7.0",
     "mocha": "^10.7.0",
-    "sass": "^1.77.8",
     "nodemon": "^3.1.4",
     "nyc": "^17.0.0",
-    "prettier": "^3.3.3"
+    "prettier": "^3.3.3",
+    "sass": "^1.77.8",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.5.4"
   },
   "engines": {
     "node": ">=12.0.0"

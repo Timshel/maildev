@@ -5,7 +5,7 @@ const fs = require("fs");
 const assert = require("assert");
 const path = require("node:path");
 
-const mailParser = require("../src/lib/mailparser");
+const mailParser = require("../dist/lib/mailparser").parse;
 
 describe("Mailparser General tests", () => {
   it("Many chunks", (done) => {
@@ -78,7 +78,8 @@ describe("Mailparser General tests", () => {
       "Content-type: text/plain; charset=utf-8\r" + "Subject: ÕÄÖÜ\n" + "\r" + "1234";
 
     mailParser(encodedText, (_, mail) => {
-      assert.strictEqual(mail.headers.priority, "normal");
+      assert.strictEqual(mail.headers.priority, undefined);
+      assert.strictEqual(mail.priority, "normal");
       done();
     });
   });
@@ -92,7 +93,7 @@ describe("Mailparser General tests", () => {
       "1234";
 
     mailParser(encodedText, (_, mail) => {
-      assert.strictEqual(mail.headers.priority, "high");
+      assert.strictEqual(mail.priority, "high");
       done();
     });
   });
@@ -847,7 +848,6 @@ describe("Mailparser Transfer encoding", () => {
 
     mailParser(encodedText, (_, mail) => {
       assert.strictEqual(mail.date.toISOString(), "2014-01-08T17:52:26.000Z");
-      assert.strictEqual(mail.headers.date.toISOString(), "2014-01-08T17:52:26.000Z");
       done();
     });
   });
@@ -857,6 +857,7 @@ describe("Mailparser Transfer encoding", () => {
 
     mailParser(encodedText, (_, mail) => {
       assert.ok(mail.date);
+      assert.ok(!mail.headers.date);
       assert.strictEqual(mail.headerLines.find((h) => h.key === "date").line, "Date: zzzzz");
       done();
     });
@@ -867,6 +868,7 @@ describe("Mailparser Transfer encoding", () => {
 
     mailParser(encodedText, (_, mail) => {
       assert.ok(mail.date);
+      assert.ok(!mail.headers.date);
       assert.strictEqual(
         mail.headerLines.find((h) => h.key === "date"),
         undefined,
