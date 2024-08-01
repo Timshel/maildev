@@ -4,7 +4,7 @@ const sendEmails = require("./send.js");
 nodemon({
   script: "./bin/maildev",
   verbose: true,
-  watch: ["index.js", "lib/*"],
+  watch: ["src/*"],
   args: ["--verbose"],
 })
   .on("start", function () {

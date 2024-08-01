@@ -8,7 +8,7 @@
 const assert = require("assert");
 const SMTPConnection = require("nodemailer/lib/smtp-connection");
 
-const MailDev = require("../index.js");
+const MailDev = require("../dist/index.js");
 
 function waitMailDevShutdown(maildev) {
   return new Promise((resolve) => {

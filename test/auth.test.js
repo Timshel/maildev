@@ -2,7 +2,7 @@
 "use strict";
 const jest = require("jest-mock");
 const expect = require("expect").expect;
-const auth = require("../lib/auth");
+const auth = require("../src/lib/auth");
 
 describe("auththentication middleware", () => {
   it("should return a function", () => {

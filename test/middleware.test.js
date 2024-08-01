@@ -12,7 +12,7 @@ const path = require("path");
 const nodemailer = require("nodemailer");
 const express = require("express");
 const proxyMiddleware = require("http-proxy-middleware").createProxyMiddleware;
-const MailDev = require("../index.js");
+const MailDev = require("../dist/index.js");
 
 const smtpPort = 9080;
 const webPort = 9081;

@@ -3,8 +3,8 @@
 const jest = require("jest-mock");
 const expect = require("expect").expect;
 const SMTPServer = require("smtp-server").SMTPServer;
-const outgoing = require("../lib/outgoing");
-const smptHelpers = require("../lib/helpers/smtp");
+const outgoing = require("../src/lib/outgoing");
+const smptHelpers = require("../src/lib/helpers/smtp");
 
 let lastPort = 8025;
 const getPort = () => lastPort++;
@@ -28,7 +28,7 @@ describe("outgoing", () => {
 
   describe("relayMail", () => {
     it("should set auto relay mode without an initialised client", () => {
-      const spy = jest.spyOn(require("../lib/logger"), "info");
+      const spy = jest.spyOn(require("../src/lib/logger"), "info");
       // Close the SMTP server before doing anything, an investigation is needed to find where the SMTP connection is not closed
       outgoing.getClient().on("end", () => {
         outgoing.setAutoRelayMode();
@@ -41,7 +41,7 @@ describe("outgoing", () => {
 
     it("should set auto relay mode with a wrong rules", (done) => {
       const rules = "testrule";
-      const spy = jest.spyOn(require("../lib/logger"), "error");
+      const spy = jest.spyOn(require("../src/lib/logger"), "error");
       outgoing.setup();
 
       // TODO: Use the expect toThrow helper, I will need to update the version of the expect library before being able to do it
@@ -59,7 +59,7 @@ describe("outgoing", () => {
     it("should set an auto relay email address", (done) => {
       const rules = ["test"];
       const emailAddress = "test@test.com";
-      const spy = jest.spyOn(require("../lib/logger"), "info");
+      const spy = jest.spyOn(require("../src/lib/logger"), "info");
 
       outgoing.setup();
       outgoing.setAutoRelayMode(true, rules, emailAddress);

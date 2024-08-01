@@ -1,7 +1,7 @@
 /* global describe, it */
 "use strict";
 const expect = require("expect").expect;
-const utils = require("../lib/utils");
+const utils = require("../src/lib/utils");
 
 describe("utils", () => {
   describe("makeId", () => {

@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "lib": ["es2021"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "target": "es2021",
+    "incremental": true,
+    "declaration": true,
+    "strict": true,
+    "noImplicitAny": false,
+    "allowJs": true
+  },
+  "include": ["./src"],
+  "exclude": ["./src/app"]
+}

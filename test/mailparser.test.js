@@ -5,7 +5,7 @@ const fs = require("fs");
 const assert = require("assert");
 const path = require("node:path");
 
-const mailParser = require("../lib/mailparser");
+const mailParser = require("../src/lib/mailparser");
 
 describe("Mailparser General tests", () => {
   it("Many chunks", (done) => {

@@ -1,12 +1,11 @@
 .DS_Store
-.sass-cache
-node_modules
-coverage
-.nyc_output
-dist
-.zip
-maildev-*
 .nodemonignore
-
-# Ignore npm debug log
+.nyc_output
+.sass-cache
+.zip
+coverage
+dist
+maildev-*
+node_modules
 npm-debug.log
+tsconfig.tsbuildinfo

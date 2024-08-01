@@ -1,7 +1,7 @@
 /* global describe, it */
 "use strict";
 const expect = require("expect").expect;
-const { calculateBcc } = require("../lib/helpers/bcc");
+const { calculateBcc } = require("../src/lib/helpers/bcc");
 
 describe("[bcc helpers]", () => {
   describe("calculateBcc", () => {

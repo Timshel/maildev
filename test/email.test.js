@@ -10,7 +10,7 @@ const http = require("http");
 const path = require("path");
 const nodemailer = require("nodemailer");
 
-const MailDev = require("../index.js");
+const MailDev = require("../dist/index.js");
 
 const port = 9025;
 const web = 8080;

@@ -37,20 +37,29 @@
     "url": "http://github.com/maildev/maildev.git"
   },
   "scripts": {
-    "build": "tsc --build",
-    "start": "node ./bin/maildev",
-    "test": "prettier . -c && nyc _mocha --exit --timeout 5000",
+    "clean": "rm -rf dist coverage tsconfig.tsbuildinfo",
+    "build": "tsc --build && npm run copy-app && npm run css",
+    "copy-app": "mkdir -p dist && cp -r ./src/app ./dist/ && rm -rf ./dist/app/styles",
+    "start": "npm run build && node ./bin/maildev",
+    "test": "prettier . -c && npm run build && nyc _mocha --exit --timeout 5000",
+    "test:debug": "nyc _mocha --exit --timeout 5000",
     "lint": "prettier . -c",
     "lint:fix": "prettier . -w",
     "dev": "node ./scripts/dev.js && npm run css-watch",
-    "css": "sass --style=compressed --no-source-map assets/styles/style.scss:app/styles/style.css",
-    "css-watch": "sass --watch --style=compressed --no-source-map assets/styles/style.scss:app/styles/style.css",
+    "css": "sass --style=compressed --no-source-map src/app/styles/style.scss:dist/app/styles/style.css",
+    "css-watch": "sass --watch --style=compressed --no-source-map src/app/styles/style.scss:dist/app/styles/style.css",
     "docker-build": "./src/scripts/dockerBuild.sh",
     "docker-run": "docker run --rm -p 1080:1080 -p 1025:1025 maildev/maildev:$npm_package_version",
     "docker-push": "./src/scripts/dockerPush.sh",
-    "update-readme": "node ./src/scripts/updateUsageREADME.js"
+    "update-readme": "node ./src/scripts/updateUsageREADME.js",
+    "prepare": "npm run build"
   },
-  "main": "src/index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "bin": {
     "maildev": "./bin/maildev"
   },
@@ -74,6 +83,11 @@
     "socket.io-adapter": "2.5.5"
   },
   "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^18.15.3",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.5.4",
     "expect": "^29.7.0",
     "http-proxy-middleware": "^3.0.0",
     "jest": "^29.7.0",
