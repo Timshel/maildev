@@ -5,157 +5,172 @@
  *   node test/scripts/send.js
  */
 // We add this setting to tell nodemailer the host isn't secure during dev
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
-const path = require('path')
-const fs = require('fs')
-const nodemailer = require('nodemailer')
+const path = require("path");
+const fs = require("fs");
+const nodemailer = require("nodemailer");
 
 // https://github.com/minimaxir/big-list-of-naughty-strings
 // const blns = require('blns');
 
-const blns = fs.readFileSync(path.join(__dirname, './resources/blns.txt'))
-const utf8sampler = fs.readFileSync(path.join(__dirname, './resources/utf-8-sampler.html'))
-const punkBandsHtml = fs.readFileSync(path.join(__dirname, './resources/punk-bands.html'))
-const formHtml = fs.readFileSync(path.join(__dirname, './resources/simple-form.html'))
+const blns = fs.readFileSync(path.join(__dirname, "./resources/blns.txt"));
+const utf8sampler = fs.readFileSync(path.join(__dirname, "./resources/utf-8-sampler.html"));
+const punkBandsHtml = fs.readFileSync(path.join(__dirname, "./resources/punk-bands.html"));
+const formHtml = fs.readFileSync(path.join(__dirname, "./resources/simple-form.html"));
 // var utf8demo = fs.readFileSync(path.join(__dirname, './resources/utf-8-demo.html'))
 // var utf8quickbrown = fs.readFileSync(path.join(__dirname, './resources/utf-8-quickbrown.html'))
 
 // Create a transport with MailDev's default receiving port
 const transporter = nodemailer.createTransport({
-  port: 1025
-})
+  port: 1025,
+});
 
 // Messages list
 const messages = [
-
   // Email w/ simple attachment and basic header
   {
-    from: 'Angelo Pappas <angelo.pappas@fbi.gov>',
-    to: 'Johnny Utah <johnny.utah@fbi.gov>',
-    subject: 'The ex-presidents are surfers',
+    from: "Angelo Pappas <angelo.pappas@fbi.gov>",
+    to: "Johnny Utah <johnny.utah@fbi.gov>",
+    subject: "The ex-presidents are surfers",
     headers: {
-      'X-some-header': 1000
+      "X-some-header": 1000,
     },
-    text: 'The wax at the bank was surfer wax!!!',
-    html: '<!DOCTYPE html><html><head></head><body>' +
-          '<script type=\'text/javascript\'>alert("Hello World")</script>' +
-          '<p>The wax at the bank was surfer wax!!!</p>' +
-          '</body></html>',
+    text: "The wax at the bank was surfer wax!!!",
+    html:
+      "<!DOCTYPE html><html><head></head><body>" +
+      "<script type='text/javascript'>alert(\"Hello World\")</script>" +
+      "<p>The wax at the bank was surfer wax!!!</p>" +
+      "</body></html>",
     attachments: [
-      { fileName: 'notes.txt', content: 'Info on surf board wax', contentType: 'text/plain' }
-    ]
+      {
+        fileName: "notes.txt",
+        content: "Info on surf board wax",
+        contentType: "text/plain",
+      },
+    ],
   },
 
   // Email w/ simple attachment and basic header
   {
-    from: 'Angelo Pappas <angelo.pappas@fbi.gov>',
-    to: ['Johnny Long Name Utah <johnny.long.email.address.utah@fbi.gov>', 'Johnny Utah <johnny.utah@fbi.gov>', 'Bodhi <bodhi@gmail.com>'],
-    subject: 'Look at it! It\'s a once in a lifetime opportunity, man! Let me go out there and let me get one wave, just one wave before you take me in.',
+    from: "Angelo Pappas <angelo.pappas@fbi.gov>",
+    to: [
+      "Johnny Long Name Utah <johnny.long.email.address.utah@fbi.gov>",
+      "Johnny Utah <johnny.utah@fbi.gov>",
+      "Bodhi <bodhi@gmail.com>",
+    ],
+    subject:
+      "Look at it! It's a once in a lifetime opportunity, man! Let me go out there and let me get one wave, just one wave before you take me in.",
     headers: {
-      'X-some-header': 1000
+      "X-some-header": 1000,
     },
-    text: 'Look at it! It\'s a once in a lifetime opportunity, man! Let me go out there and let me get one wave, just one wave before you take me in. I mean, come on man, where I am I gonna go? Cliffs on both sides! I\'m not gonna paddle my way to New Zealand! Come on, compadre. Come on!\n'.repeat(100),
-    html: '<!DOCTYPE html><html><head></head><body>' +
-          '<p>Look at it! It\'s a once in a lifetime opportunity, man! Let me go out there and let me get one wave, just one wave before you take me in. I mean, come on man, where I am I gonna go? Cliffs on both sides! I\'m not gonna paddle my way to New Zealand! Come on, compadre. Come on!</p>'.repeat(100) +
-          '</body></html>'
+    text: "Look at it! It's a once in a lifetime opportunity, man! Let me go out there and let me get one wave, just one wave before you take me in. I mean, come on man, where I am I gonna go? Cliffs on both sides! I'm not gonna paddle my way to New Zealand! Come on, compadre. Come on!\n".repeat(
+      100,
+    ),
+    html:
+      "<!DOCTYPE html><html><head></head><body>" +
+      "<p>Look at it! It's a once in a lifetime opportunity, man! Let me go out there and let me get one wave, just one wave before you take me in. I mean, come on man, where I am I gonna go? Cliffs on both sides! I'm not gonna paddle my way to New Zealand! Come on, compadre. Come on!</p>".repeat(
+        100,
+      ) +
+      "</body></html>",
   },
 
   // Plain text email
   {
-    from: 'Johnny Utah <johnny.utah@fbi.gov>',
-    to: 'Angelo Pappas <angelo.pappas@fbi.gov>',
-    subject: 'You were right.',
-    text: 'They are surfers.'
+    from: "Johnny Utah <johnny.utah@fbi.gov>",
+    to: "Angelo Pappas <angelo.pappas@fbi.gov>",
+    subject: "You were right.",
+    text: "They are surfers.",
   },
 
   // HTML email w/ image
   {
-    from: 'Bodhi <bodhi@gmail.com>',
-    to: 'Johnny Utah <johnny.utah@fbi.gov>',
-    subject: 'The ultimate price',
-    text: 'If you want the ultimate, you\'ve got to be willing to pay the ultimate price. \nIt\'s not tragic to die doing what you love.',
-    html: '<!DOCTYPE html><html><head></head><body style="background:#eee;font-family:sans-serif;padding:2em 2em">' +
-          '<h1>Point Break</h1>' +
-          '<img src="http://farm8.staticflickr.com/7337/11784709785_bbed9bae7d_m.jpg">' +
-          '<p>If you want the ultimate, you\'ve got to be willing to pay the ultimate price. <br>It\'s not tragic to die doing what you love.</p>' +
-          '<p><strong>- Bodhi</strong></p>' +
-          '</body></html>'
+    from: "Bodhi <bodhi@gmail.com>",
+    to: "Johnny Utah <johnny.utah@fbi.gov>",
+    subject: "The ultimate price",
+    text: "If you want the ultimate, you've got to be willing to pay the ultimate price. \nIt's not tragic to die doing what you love.",
+    html:
+      '<!DOCTYPE html><html><head></head><body style="background:#eee;font-family:sans-serif;padding:2em 2em">' +
+      "<h1>Point Break</h1>" +
+      '<img src="http://farm8.staticflickr.com/7337/11784709785_bbed9bae7d_m.jpg">' +
+      "<p>If you want the ultimate, you've got to be willing to pay the ultimate price. <br>It's not tragic to die doing what you love.</p>" +
+      "<p><strong>- Bodhi</strong></p>" +
+      "</body></html>",
   },
 
   // Email w/ embedded image
   {
-    from: 'Johnny Utah <johnny.utah@fbi.gov>',
-    to: 'Bodhi <bodhi@gmail.com>',
-    subject: 'Where\'s Tyler?',
+    from: "Johnny Utah <johnny.utah@fbi.gov>",
+    to: "Bodhi <bodhi@gmail.com>",
+    subject: "Where's Tyler?",
     html: 'Here she is:<br><img src="cid:image"/>',
     attachments: [
       {
-        filename: 'tyler.jpg',
-        path: path.join(__dirname, '/../test/tyler.jpg'),
-        cid: 'image'
-      }
-    ]
+        filename: "tyler.jpg",
+        path: path.join(__dirname, "/../test/tyler.jpg"),
+        cid: "image",
+      },
+    ],
   },
 
   // Another email w/ embedded image, with same cid
   {
-    from: 'Bodhi <bodhi@gmail.com>',
-    to: 'Johnny Utah <johnny.utah@fbi.gov>',
-    subject: 'Big wave coming',
+    from: "Bodhi <bodhi@gmail.com>",
+    to: "Johnny Utah <johnny.utah@fbi.gov>",
+    subject: "Big wave coming",
     html: 'You need to catch this!<br><img src="cid:image"/>',
     attachments: [
       {
-        filename: 'wave.jpg',
-        path: path.join(__dirname, '/../test/wave.jpg'),
-        cid: 'image'
-      }
-    ]
+        filename: "wave.jpg",
+        path: path.join(__dirname, "/../test/wave.jpg"),
+        cid: "image",
+      },
+    ],
   },
 
   // Email with mutliple to, cc & bcc
   {
-    from: 'Bodhi <bodhi@gmail.com>',
-    to: ['Johnny First <johnny.first@fbi.gov>', 'Johnny Second <johnny.second@fbi.gov>'],
-    cc: ['Johnny Third <johnny.third@fbi.gov>', 'Johnny Fourth <johnny.fourth@fbi.gov>'],
-    bcc: ['Johnny Fifth <johnny.fifth@fbi.gov>', 'Johnny Sixth <johnny.sixth@fbi.gov>'],
-    subject: '100% pure adrenaline!',
-    text: 'This is stimulating, but we\'re out of here.'
+    from: "Bodhi <bodhi@gmail.com>",
+    to: ["Johnny First <johnny.first@fbi.gov>", "Johnny Second <johnny.second@fbi.gov>"],
+    cc: ["Johnny Third <johnny.third@fbi.gov>", "Johnny Fourth <johnny.fourth@fbi.gov>"],
+    bcc: ["Johnny Fifth <johnny.fifth@fbi.gov>", "Johnny Sixth <johnny.sixth@fbi.gov>"],
+    subject: "100% pure adrenaline!",
+    text: "This is stimulating, but we're out of here.",
   },
 
   // Email with big list of naughty strings
   {
-    from: 'Bodhi <bodhi@gmail.com>',
-    to: 'Johnny Utah <johnny.utah@fbi.gov>',
-    subject: 'Naughty!',
+    from: "Bodhi <bodhi@gmail.com>",
+    to: "Johnny Utah <johnny.utah@fbi.gov>",
+    subject: "Naughty!",
     text: blns,
-    html: '<!DOCTYPE html><html><head></head><body>' + blns + '</body></html>'
+    html: "<!DOCTYPE html><html><head></head><body>" + blns + "</body></html>",
   },
 
   //
   {
-    from: 'Bodhi <bodhi@gmail.com>',
-    to: 'Johnny Utah <johnny.utah@fbi.gov>',
-    subject: 'Have a sample of this',
+    from: "Bodhi <bodhi@gmail.com>",
+    to: "Johnny Utah <johnny.utah@fbi.gov>",
+    subject: "Have a sample of this",
     text: utf8sampler,
-    html: utf8sampler
+    html: utf8sampler,
   },
 
   // Email with styled table
   {
-    from: 'johnny.rotten@sexpistols.uk',
-    to: 'sid.vicious@sexpistols.uk',
-    subject: 'Test html with styled table',
-    html: punkBandsHtml
+    from: "johnny.rotten@sexpistols.uk",
+    to: "sid.vicious@sexpistols.uk",
+    subject: "Test html with styled table",
+    html: punkBandsHtml,
   },
 
   // Email with form
   {
-    from: 'Bodhi <bodhi@gmail.com>',
-    to: 'Johnny Utah <johnny.utah@fbi.gov>',
-    subject: 'Test html with form',
-    html: formHtml
-  }
+    from: "Bodhi <bodhi@gmail.com>",
+    to: "Johnny Utah <johnny.utah@fbi.gov>",
+    subject: "Test html with form",
+    html: formHtml,
+  },
 
   //
   /*
@@ -184,19 +199,24 @@ const messages = [
     text: 'This test is only for subject.'
   }
   */
+];
 
-]
-
-function sendEmails (logErrors) {
+function sendEmails(logErrors) {
   messages.forEach(function (message) {
     transporter.sendMail(message, function (err, info) {
-      if (logErrors && err) { return console.log('Test email error: ', err) }
-      if (info) {
-        console.log('Test email sent: ' + info.response)
+      if (logErrors && err) {
+        return console.log("Test email error: ", err);
       }
-    })
-  })
+      if (info) {
+        console.log("Test email sent: " + info.response);
+      }
+    });
+  });
 }
 
 // Run once if called directly, otherwise export
-if (require.main === module) { sendEmails(true) } else { module.exports = sendEmails }
+if (require.main === module) {
+  sendEmails(true);
+} else {
+  module.exports = sendEmails;
+}
