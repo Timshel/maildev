@@ -37,6 +37,7 @@
     "url": "http://github.com/maildev/maildev.git"
   },
   "scripts": {
+    "build": "tsc --build",
     "start": "node ./bin/maildev",
     "test": "prettier . -c && nyc _mocha --exit --timeout 5000",
     "lint": "prettier . -c",
@@ -44,12 +45,12 @@
     "dev": "node ./scripts/dev.js && npm run css-watch",
     "css": "sass --style=compressed --no-source-map assets/styles/style.scss:app/styles/style.css",
     "css-watch": "sass --watch --style=compressed --no-source-map assets/styles/style.scss:app/styles/style.css",
-    "docker-build": "./scripts/dockerBuild.sh",
+    "docker-build": "./src/scripts/dockerBuild.sh",
     "docker-run": "docker run --rm -p 1080:1080 -p 1025:1025 maildev/maildev:$npm_package_version",
-    "docker-push": "./scripts/dockerPush.sh",
-    "update-readme": "node ./scripts/updateUsageREADME.js"
+    "docker-push": "./src/scripts/dockerPush.sh",
+    "update-readme": "node ./src/scripts/updateUsageREADME.js"
   },
-  "main": "./index.js",
+  "main": "src/index.js",
   "bin": {
     "maildev": "./bin/maildev"
   },
@@ -89,7 +90,7 @@
   "nyc": {
     "exclude": [
       "test/**/*",
-      "lib/helpers/strtotime.js"
+      "src/lib/helpers/strtotime.js"
     ],
     "ignore-class-method": "methodToIgnore",
     "reporter": [

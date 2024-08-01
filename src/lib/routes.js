@@ -5,7 +5,7 @@
  */
 const express = require("express");
 const compression = require("compression");
-const pkg = require("../package.json");
+const pkg = require("../../package.json");
 const { filterEmails } = require("./utils");
 
 const emailRegexp =
