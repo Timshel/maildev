@@ -149,7 +149,7 @@ export interface Attachment extends MailParser.Attachment {
   cid?: string | undefined; // e.g. '5.1321281380971@localhost'
 }
 
-export interface Mail {
+export interface ParsedMail {
   /**
    * An array of attachments.
    */
@@ -217,4 +217,20 @@ export interface Mail {
    * Priority of the e-mail.
    */
   priority: "normal" | "low" | "high";
+}
+
+export interface Envelope {
+  from: string | undefined;
+  to: string | undefined;
+  host: string | undefined;
+  remoteAddress: string | undefined;
+}
+
+export interface Mail extends ParsedMail {
+  id: string;
+  calculatedBcc: string[];
+  size: number;
+  sizeHuman: string;
+  isRead: boolean;
+  envelope: Envelope;
 }

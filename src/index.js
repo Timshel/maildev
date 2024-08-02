@@ -4,12 +4,12 @@
  * Author: Dan Farrelly <daniel.j.farrelly@gmail.com>
  * Licensed under the MIT License.
  */
+const { MailServer } = require("./lib/mailserver");
 
 const program = require("commander").program;
 const async = require("async");
 const web = require("./lib/web");
 const pkg = require("../package.json");
-const mailserver = require("./lib/mailserver");
 const logger = require("./lib/logger");
 const { options, appendOptions } = require("./lib/options");
 
@@ -30,7 +30,7 @@ module.exports = function (config) {
   }
 
   // Start the Mailserver
-  mailserver.create(
+  const mailserver = new MailServer(
     config.smtp,
     config.ip,
     config.mailDirectory,
@@ -101,7 +101,7 @@ module.exports = function (config) {
 
   function shutdown() {
     logger.info("Received shutdown signal, shutting down now...");
-    async.parallel([mailserver.close, web.close], function () {
+    async.parallel([mailserver.close.bind(mailserver), web.close], function () {
       process.exit(0);
     });
   }

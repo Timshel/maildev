@@ -32,7 +32,7 @@ module.exports = function (app, mailserver, basePathname) {
     mailserver.getEmail(req.params.id, function (err, email) {
       if (err) return res.status(404).json({ error: err.message });
 
-      email.read = true; // Mark the email as 'read'
+      email.isRead = true; // Mark the email as 'read'
 
       res.json(email);
     });

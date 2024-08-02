@@ -1,5 +1,5 @@
 import type * as MailParser from "mailparser";
-import type { AddressObject, Headers, HeaderValue, Mail } from "./type";
+import type { AddressObject, Headers, HeaderValue, ParsedMail } from "./type";
 
 const crypto = require("crypto");
 const mime = require("mime");
@@ -7,7 +7,7 @@ const simpleParser = require("mailparser").simpleParser;
 const strtotime = require("./helpers/strtotime");
 const logger = require("./logger");
 
-export function parse(input, callback: (err, mail) => any) {
+export function parse(input, callback: (err, mail: ParsedMail) => any) {
   var mail;
 
   simpleParser(input, {}, (err, parsed: MailParser.ParsedMail) => {

@@ -89,7 +89,7 @@ describe("mailserver", () => {
           assert.strictEqual(err.code, "EENVELOPE");
 
           connection.close();
-          maildev.close(done);
+          done();
         });
       });
     });
@@ -121,13 +121,12 @@ describe("mailserver", () => {
 
             connection.send(envelope, "They are surfers.", function (err, info) {
               if (err) return done(err);
-
               assert.notStrictEqual(typeof info, "undefined");
               assert.strictEqual(info.accepted.length, 1);
               assert.strictEqual(info.rejected.length, 0);
 
               connection.close();
-              maildev.close(done);
+              done();
             });
           },
         );
