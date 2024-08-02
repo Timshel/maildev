@@ -7,83 +7,72 @@ const simpleParser = require("mailparser").simpleParser;
 const strtotime = require("./helpers/strtotime");
 const logger = require("./logger");
 
-export function parse(input, callback: (err, mail: ParsedMail) => any) {
-  var mail;
+export async function parse(input): Promise<ParsedMail> {
+  return simpleParser(input, {}).then((parsed: MailParser.ParsedMail) => {
+    const headers: Headers = {
+      from: getAddress(parsed.headers, "from"),
+      to: getAddress(parsed.headers, "to"),
+      cc: getAddress(parsed.headers, "cc"),
+      bcc: getAddress(parsed.headers, "bcc"),
+      date: getDate(parsed.headers, "date"),
+      replyTo: getAddress(parsed.headers, "reply-to"),
+      received: getSringArray(parsed.headers, "received"),
+      priority: getSring(parsed.headers, "priority"),
+      headers: new Map(
+        Array.from(parsed.headers, ([key, value]) => {
+          return [key, typeof value === "string" ? [value] : value];
+        }),
+      ),
+    };
 
-  simpleParser(input, {}, (err, parsed: MailParser.ParsedMail) => {
-    if (parsed) {
-      const headers: Headers = {
-        from: getAddress(parsed.headers, "from"),
-        to: getAddress(parsed.headers, "to"),
-        cc: getAddress(parsed.headers, "cc"),
-        bcc: getAddress(parsed.headers, "bcc"),
-        date: getDate(parsed.headers, "date"),
-        replyTo: getAddress(parsed.headers, "reply-to"),
-        received: getSringArray(parsed.headers, "received"),
-        priority: getSring(parsed.headers, "priority"),
-        headers: new Map(
-          Array.from(parsed.headers, ([key, value]) => {
-            return [key, typeof value === "string" ? [value] : value];
-          }),
-        ),
+    const references = (
+      typeof parsed.references === "string" ? [parsed.references] : (parsed.references ?? [])
+    ).map((ref) => {
+      return ref.replace(/^<(.*)>$/, "$1");
+    });
+
+    const inReplyTo = (
+      typeof parsed.inReplyTo === "string" ? (parsed.inReplyTo.match(/<([^<>]*)>/g) ?? []) : []
+    ).map((ref) => {
+      return ref.replace(/^<(.*)>$/, "$1");
+    });
+
+    const fileNames = [];
+    const attachments = (parsed.attachments ?? []).map((attachment: MailParser.Attachment) => {
+      const generatedFileName = generateFileNames(
+        fileNames,
+        attachment.filename,
+        attachment.contentType,
+      );
+
+      const contentId =
+        !attachment.contentId && generatedFileName
+          ? crypto.createHash("md5").update(Buffer.from(generatedFileName, "utf-8")).digest("hex") +
+            "@mailparser"
+          : attachment.contentId;
+
+      return {
+        ...attachment,
+        contentId,
+        generatedFileName,
       };
+    });
 
-      const references = (
-        typeof parsed.references === "string" ? [parsed.references] : (parsed.references ?? [])
-      ).map((ref) => {
-        return ref.replace(/^<(.*)>$/, "$1");
-      });
-
-      const inReplyTo = (
-        typeof parsed.inReplyTo === "string" ? (parsed.inReplyTo.match(/<([^<>]*)>/g) ?? []) : []
-      ).map((ref) => {
-        return ref.replace(/^<(.*)>$/, "$1");
-      });
-
-      const fileNames = [];
-      const attachments = (parsed.attachments ?? []).map((attachment: MailParser.Attachment) => {
-        const generatedFileName = generateFileNames(
-          fileNames,
-          attachment.filename,
-          attachment.contentType,
-        );
-
-        const contentId =
-          !attachment.contentId && generatedFileName
-            ? crypto
-                .createHash("md5")
-                .update(Buffer.from(generatedFileName, "utf-8"))
-                .digest("hex") + "@mailparser"
-            : attachment.contentId;
-
-        return {
-          ...attachment,
-          contentId,
-          generatedFileName,
-        };
-      });
-
-      mail = {
-        ...parsed,
-        replyTo: headers?.replyTo?.value,
-        from: headers?.from?.value,
-        to: headers?.to?.value,
-        cc: headers?.cc?.value,
-        bcc: headers?.bcc?.value,
-        date: parsed.date ?? new Date(),
-        priority: headers.priority ?? "normal",
-        receivedDate: parseReceived(
-          parsed.date,
-          headers.received,
-          parsed.headers.get("x-received"),
-        ),
-        references,
-        inReplyTo,
-        attachments,
-      };
-    }
-
-    callback(err, mail);
+    return {
+      ...parsed,
+      headers,
+      replyTo: headers?.replyTo?.value,
+      from: headers?.from?.value,
+      to: headers?.to?.value,
+      cc: headers?.cc?.value,
+      bcc: headers?.bcc?.value,
+      date: parsed.date ?? new Date(),
+      priority: headers.priority ?? "normal",
+      receivedDate: parseReceived(parsed.date, headers.received, parsed.headers.get("x-received")),
+      references,
+      inReplyTo,
+      attachments,
+    };
   });
 }
 

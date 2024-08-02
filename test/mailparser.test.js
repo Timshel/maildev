@@ -12,7 +12,7 @@ describe("Mailparser General tests", () => {
     const encodedText = "Content-Type: text/plain; charset=utf-8\r\n" + "\r\n" + "ÕÄ\r\n" + "ÖÜ"; // \r\nÕÄÖÜ
     const buffer = Buffer.from(encodedText, "utf-8");
 
-    mailParser(buffer, (_, mail) => {
+    mailParser(buffer).then((mail) => {
       assert.strictEqual(mail.text, "ÕÄ\nÖÜ");
       done();
     });
@@ -21,7 +21,7 @@ describe("Mailparser General tests", () => {
   it("Headers only", (done) => {
     const encodedText = "Content-type: text/plain; charset=utf-8\r\n" + "Subject: ÕÄÖÜ";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail.subject, "ÕÄÖÜ");
       done();
     });
@@ -30,7 +30,7 @@ describe("Mailparser General tests", () => {
   it("Body only", (done) => {
     const encodedText = "\r\n" + "===";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail.text, "===");
       done();
     });
@@ -45,7 +45,7 @@ describe("Mailparser General tests", () => {
       "ÜÖÄÕ\n" +
       "1234";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail.subject, "ÕÄÖÜ");
       assert.strictEqual(mail.text, "1234\nÕÄÖÜ\rÜÖÄÕ\n1234");
       done();
@@ -66,7 +66,7 @@ describe("Mailparser General tests", () => {
       "AAECAwQFBg==\r\n" +
       "--ABC--";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail.headers.subject, "ABCDEF");
       assert.strictEqual(mail.headers["x-test"], "ÕÄÖÜ");
       done();
@@ -77,7 +77,7 @@ describe("Mailparser General tests", () => {
     const encodedText =
       "Content-type: text/plain; charset=utf-8\r" + "Subject: ÕÄÖÜ\n" + "\r" + "1234";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail.headers.priority, undefined);
       assert.strictEqual(mail.priority, "normal");
       done();
@@ -92,7 +92,7 @@ describe("Mailparser General tests", () => {
       "\r" +
       "1234";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail.priority, "high");
       done();
     });
@@ -101,7 +101,7 @@ describe("Mailparser General tests", () => {
   it("Single reference", (done) => {
     const encodedText = "Content-type: text/plain\r\n" + "References: <mail1>\n" + "\n" + "1234";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.deepStrictEqual(mail.references, ["mail1"]);
       done();
     });
@@ -115,7 +115,7 @@ describe("Mailparser General tests", () => {
       "\r" +
       "1234";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.deepStrictEqual(mail.references, ["mail1", "mail2", "mail3"]);
       done();
     });
@@ -124,7 +124,7 @@ describe("Mailparser General tests", () => {
   it("Single in-reply-to", (done) => {
     const encodedText = "Content-type: text/plain\n" + "in-reply-to: <mail1>\n" + "\r" + "1234";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.deepStrictEqual(mail.inReplyTo, ["mail1"]);
       done();
     });
@@ -138,7 +138,7 @@ describe("Mailparser General tests", () => {
       "\r" +
       "1234";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.deepStrictEqual(mail.inReplyTo, ["mail1", "mail2", "mail3"]);
       done();
     });
@@ -152,7 +152,7 @@ describe("Mailparser General tests", () => {
       "\r" +
       "1234";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       // Not in spec ? https://www.rfc-editor.org/rfc/rfc5322, max 1
       // assert.deepStrictEqual(mail.inReplyTo, ["mail1", "mail3"]);
       assert.deepStrictEqual(mail.inReplyTo, ["mail3"]);
@@ -164,7 +164,7 @@ describe("Mailparser General tests", () => {
     const encodedText =
       "Reply-TO: andris <andris@disposebox.com>\n" + "Subject: ÕÄÖÜ\n" + "\r" + "1234";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.deepStrictEqual(mail.replyTo, [
         {
           name: "andris",
@@ -181,7 +181,7 @@ describe("Mailparser Text encodings", () => {
     const encodedText = [13, 10, 213, 196, 214, 220]; // \r\nÕÄÖÜ
     const buffer = Buffer.from(encodedText);
 
-    mailParser(buffer, (_, mail) => {
+    mailParser(buffer).then((mail) => {
       assert.strictEqual(mail.text, "ÕÄÖÜ");
       done();
     });
@@ -190,7 +190,7 @@ describe("Mailparser Text encodings", () => {
   it("Plaintext encoding: Header defined", (done) => {
     const encodedText = "Content-Type: TEXT/PLAIN; CHARSET=UTF-8\r\n" + "\r\n" + "ÕÄÖÜ";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail.text, "ÕÄÖÜ");
       done();
     });
@@ -202,7 +202,7 @@ describe("Mailparser Text encodings", () => {
       "\r\n" +
       '<html><head><meta charset="utf-8"/></head><body>ÕÄÖÜ';
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual((mail.html || "").substr(-4), "ÕÄÖÜ");
       done();
     });
@@ -211,7 +211,7 @@ describe("Mailparser Text encodings", () => {
   it("HTML encoding: Header defined", (done) => {
     const encodedText = "Content-Type: text/html; charset=iso-UTF-8\r\n" + "\r\n" + "ÕÄÖÜ";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail.html, "ÕÄÖÜ");
       done();
     });
@@ -224,7 +224,7 @@ describe("Mailparser Text encodings", () => {
       "To: =?ISO-8859-1?Q?Keld_J=F8rn_Simonsen?= <to@email.com>\r\n" +
       "Subject: =?iso-8859-1?Q?Avaldu?= =?iso-8859-1?Q?s_lepingu_?=\r\n =?iso-8859-1?Q?l=F5petamise?= =?iso-8859-1?Q?ks?=\r\n";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail.subject, "Avaldus lepingu lõpetamiseks");
       assert.strictEqual(mail.from[0].name, "");
       assert.strictEqual(mail.to[0].name, "Keld Jørn Simonsen");
@@ -241,7 +241,7 @@ describe("Mailparser attachment encodings", () => {
       "\r\n" +
       "=00=01=02=03=FD=FE=FF";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(
         Array.prototype.slice.apply(mail?.attachments[0]?.content || []).join(","),
         "0,1,2,3,253,254,255",
@@ -257,7 +257,7 @@ describe("Mailparser attachment encodings", () => {
       "\r\n" +
       "AAECA/3+/w==";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(
         Array.prototype.slice.apply(mail?.attachments[0]?.content || []).join(","),
         "0,1,2,3,253,254,255",
@@ -269,7 +269,7 @@ describe("Mailparser attachment encodings", () => {
   it("8bit", (done) => {
     const encodedText = "Content-Type: application/octet-stream\r\n" + "\r\n" + "ÕÄÖÜ";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(
         Array.prototype.slice.apply(mail?.attachments[0]?.content || []).join(","),
         "195,149,195,132,195,150,195,156",
@@ -288,7 +288,7 @@ describe("Mailparser attachment encodings", () => {
       "`\r\n" +
       "end";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail.attachments[0].content.toString(), "Cat");
       done();
     });
@@ -304,7 +304,7 @@ describe("Mailparser Attachment Content-Id", () => {
       "\r\n" +
       "=00=01=02=03=FD=FE=FF";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(
         mail?.attachments[0]?.contentId,
         "7c7cf35ce5becf62faea56ed8d0ad6e4@mailparser",
@@ -322,7 +322,7 @@ describe("Mailparser Attachment Content-Id", () => {
       "\r\n" +
       "=00=01=02=03=FD=FE=FF";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail?.attachments[0]?.contentId, "test@localhost");
       done();
     });
@@ -338,7 +338,7 @@ describe("Mailparser Attachment filename", () => {
       "\r\n" +
       "=00=01=02=03=FD=FE=FF";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail?.attachments[0]?.filename, "ÕÄÖÜ");
       done();
     });
@@ -352,7 +352,7 @@ describe("Mailparser Attachment filename", () => {
       "\r\n" +
       "=00=01=02=03=FD=FE=FF";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail?.attachments[0]?.filename, "ÕÄÖÜ");
       done();
     });
@@ -367,7 +367,7 @@ describe("Mailparser Attachment filename", () => {
       "\r\n" +
       "=00=01=02=03=FD=FE=FF";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail?.attachments[0]?.filename, "John Doe's.xls");
       done();
     });
@@ -384,7 +384,7 @@ describe("Mailparser Attachment filename", () => {
       "\r\n" +
       "=00=01=02=03=FD=FE=FF";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail?.attachments[0]?.filename, "OAU.txt");
       done();
     });
@@ -400,7 +400,7 @@ describe("Mailparser Attachment filename", () => {
       "\r\n" +
       "=00=01=02=03=FD=FE=FF";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail?.attachments[0]?.filename, "ÕÄÖÜ");
       done();
     });
@@ -417,7 +417,7 @@ describe("Mailparser Attachment filename", () => {
       "\r\n" +
       "=00=01=02=03=FD=FE=FF";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail?.attachments[0]?.filename, "ÕÄÖÜ.txt");
       done();
     });
@@ -430,7 +430,7 @@ describe("Mailparser Attachment filename", () => {
       "\r\n" +
       "=00=01=02=03=FD=FE=FF";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail?.attachments[0]?.filename, "ÕÄÖÜ");
       done();
     });
@@ -443,7 +443,7 @@ describe("Mailparser Attachment filename", () => {
       "\r\n" +
       "=00=01=02=03=FD=FE=FF";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail?.attachments[0]?.filename, "test");
       done();
     });
@@ -457,7 +457,7 @@ describe("Mailparser Attachment filename", () => {
       "\r\n" +
       "=00=01=02=03=FD=FE=FF";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail?.attachments[0]?.filename, "ÕÄÖÜ");
       done();
     });
@@ -472,7 +472,7 @@ describe("Mailparser Attachment filename", () => {
       "\r\n" +
       "=00=01=02=03=FD=FE=FF";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail?.attachments[0]?.filename, "ÕÄÖÜ");
       done();
     });
@@ -485,7 +485,7 @@ describe("Mailparser Attachment filename", () => {
       "\r\n" +
       "=00=01=02=03=FD=FE=FF";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail?.attachments[0]?.generatedFileName, "attachment.pdf");
       done();
     });
@@ -498,7 +498,7 @@ describe("Mailparser Attachment filename", () => {
       "\r\n" +
       "=00=01=02=03=FD=FE=FF";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail?.attachments[0]?.generatedFileName, "attachment.bin");
       done();
     });
@@ -518,7 +518,7 @@ describe("Mailparser Attachment filename", () => {
       "=00=01=02=03=FD=FE=FF\r\n" +
       "--ABC--";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail?.attachments[0]?.generatedFileName, "test.txt");
       assert.strictEqual(mail?.attachments[1]?.generatedFileName, "test-1.txt");
       done();
@@ -539,7 +539,7 @@ describe("Mailparser Attachment filename", () => {
       "=00=01=02=03=FD=FE=FF\r\n" +
       "--ABC--";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail?.attachments[0]?.generatedFileName, "attachment.bin");
       assert.strictEqual(mail?.attachments[1]?.generatedFileName, "test.txt");
       done();
@@ -568,7 +568,7 @@ describe("Mailparser Attachment filename", () => {
       "=00=01=02=03=FD=FE=FF\r\n" +
       "--ABC--";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail?.attachments[0]?.generatedFileName, "somename.txt");
       assert.strictEqual(mail?.attachments[1]?.generatedFileName, "somename-1-1.txt");
       assert.strictEqual(mail?.attachments[2]?.generatedFileName, "somename-2.txt");
@@ -587,7 +587,7 @@ describe("Mailparser Attachment filename", () => {
       "=00=01=02=03=FD=FE=FF\r\n" +
       "--ABC--";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail?.attachments[0]?.generatedFileName, "attachment.pdf");
       done();
     });
@@ -603,7 +603,7 @@ describe("Mailparser Attachment filename", () => {
       "=00=01=02=03=FD=FE=FF\r\n" +
       "--ABC--";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail?.attachments[0]?.generatedFileName, "hello;world;test.txt");
       done();
     });
@@ -624,7 +624,7 @@ describe("Mailparser Attachment filename", () => {
       "end\r\n" +
       "--ABC--";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail?.attachments[0]?.generatedFileName, "hello ~!@#%.txt");
       done();
     });
@@ -635,7 +635,7 @@ describe("Mailparser plaintext format", () => {
   it("Default", (done) => {
     const encodedText = "Content-Type: text/plain;\r\n\r\nFirst line \r\ncontinued";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail.text, "First line \ncontinued");
       done();
     });
@@ -645,7 +645,7 @@ describe("Mailparser plaintext format", () => {
     const encodedText =
       "Content-Type: text/plain; format=flowed\r\n\r\nFirst line \r\ncontinued \r\nand so on";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail.text, "First line continued and so on");
       done();
     });
@@ -657,7 +657,7 @@ describe("Mailparser plaintext format", () => {
       "-- \r\n" +
       "Signature\r\n";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail.text, "How are you today?\n-- \nSignature\n");
       done();
     });
@@ -667,7 +667,7 @@ describe("Mailparser plaintext format", () => {
     const encodedText =
       "Content-Type: text/plain; format=fixed\r\n\r\nFirst line \r\ncontinued \r\nand so on";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail.text, "First line \ncontinued \nand so on");
       done();
     });
@@ -677,7 +677,7 @@ describe("Mailparser plaintext format", () => {
     const encodedText =
       "Content-Type: text/plain; format=flowed; delsp=yes\r\n\r\nFirst line \r\ncontinued \r\nand so on";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail.text, "First linecontinuedand so on");
       done();
     });
@@ -687,7 +687,7 @@ describe("Mailparser plaintext format", () => {
     const encodedText =
       "Content-Type: text/plain; format=flowed\r\nContent-Transfer-Encoding: QUOTED-PRINTABLE\r\n\r\nFoo =\n\nBar =\n\nBaz";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail.text, "Foo Bar Baz");
       done();
     });
@@ -699,7 +699,7 @@ describe("Mailparser plaintext format", () => {
       "--=20\r\n" +
       "Signature\r\n";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail.text, "How are you today?\n-- \nSignature\n");
       done();
     });
@@ -709,7 +709,7 @@ describe("Mailparser plaintext format", () => {
     const encodedText =
       "Content-Type: text/plain; format=flowed; delsp=yes\r\nContent-Transfer-Encoding: QUOTED-PRINTABLE\r\n\r\nFoo =\n\nBar =\n\nBaz";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail.text, "FooBarBaz");
       done();
     });
@@ -721,7 +721,7 @@ describe("Mailparser Transfer encoding", () => {
     const encodedText =
       "Content-type: text/plain\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n=D5=C4=D6=DC";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail.text, "ÕÄÖÜ");
       done();
     });
@@ -731,7 +731,7 @@ describe("Mailparser Transfer encoding", () => {
     const encodedText =
       "Content-type: text/plain; charset=utf-8\r\nContent-Transfer-Encoding: QUOTED-PRINTABLE\r\n\r\n=C3=95=C3=84=C3=96=C3=9C";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail.text, "ÕÄÖÜ");
       done();
     });
@@ -741,7 +741,7 @@ describe("Mailparser Transfer encoding", () => {
     const encodedText =
       "Content-type: text/plain\r\nContent-Transfer-Encoding: bAse64\r\n\r\n1cTW3A==";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail.text, "ÕÄÖÜ");
       done();
     });
@@ -751,7 +751,7 @@ describe("Mailparser Transfer encoding", () => {
     const encodedText =
       "Content-type: text/plain; charset=utf-8\r\nContent-Transfer-Encoding: bAse64\r\n\r\nw5XDhMOWw5w=";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail.text, "ÕÄÖÜ");
       done();
     });
@@ -761,7 +761,7 @@ describe("Mailparser Transfer encoding", () => {
     const encodedText =
       "Content-type: text/plain; charset=utf-8\r\nSubject: =?iso-8859-1?Q?Avaldu?= =?iso-8859-1?Q?s_lepingu_?=\r\n =?iso-8859-1?Q?l=F5petamise?= =?iso-8859-1?Q?ks?=\r\n";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail.subject, "Avaldus lepingu lõpetamiseks");
       done();
     });
@@ -773,7 +773,7 @@ describe("Mailparser Transfer encoding", () => {
       "Subject: abc=?utf-8?Q?=C3=B6=C\r\n" +
       " 3=B5=C3=BC?=";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail.subject, "abcöõü");
       done();
     });
@@ -786,7 +786,7 @@ describe("Mailparser Transfer encoding", () => {
     });
     const buffer = Buffer.from(textmap);
 
-    mailParser(buffer, (_, mail) => {
+    mailParser(buffer).then((mail) => {
       assert.strictEqual(mail.text, "ÕÄÖÜ");
       done();
     });
@@ -796,7 +796,7 @@ describe("Mailparser Transfer encoding", () => {
     const encodedText =
       "Content-type: text/plain; charset=utf-8\r\nContent-Transfer-Encoding: 8bit\r\n\r\nÕÄÖÜ";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail.text, "ÕÄÖÜ");
       done();
     });
@@ -806,7 +806,7 @@ describe("Mailparser Transfer encoding", () => {
     const encodedText =
       "Content-type: text/plain; charset=utf-8\r\nContent-Transfer-Encoding: QUOTED-PRINTABLE\r\n\r\n==C3==95=C3=84=C3=96=C3=9C=";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail.text, "=�=�ÄÖÜ");
       done();
     });
@@ -816,7 +816,7 @@ describe("Mailparser Transfer encoding", () => {
     const encodedText =
       "Content-type: text/plain; charset=utf-8\r\nContent-Transfer-Encoding: base64\r\n\r\nw5XDhMOWw5";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(
         Array.prototype.map
           .call(mail.text, (chr) => {
@@ -832,7 +832,7 @@ describe("Mailparser Transfer encoding", () => {
   it.skip("gb2312 mime words", (done) => {
     const encodedText = "From: =?gb2312?B?086yyZjl?= user@ldkf.com.tw\r\n\r\nBody";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.deepStrictEqual(mail.from, [
         {
           address: "user@ldkf.com.tw",
@@ -846,7 +846,7 @@ describe("Mailparser Transfer encoding", () => {
   it("Valid Date header", (done) => {
     const encodedText = "Date: Wed, 08 Jan 2014 09:52:26 -0800\r\n\r\n1cTW3A==";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail.date.toISOString(), "2014-01-08T17:52:26.000Z");
       done();
     });
@@ -854,10 +854,9 @@ describe("Mailparser Transfer encoding", () => {
 
   it("Invalid Date header", (done) => {
     const encodedText = "Date: zzzzz\r\n\r\n1cTW3A==";
-
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.ok(mail.date);
-      assert.ok(!mail.headers.date);
+      assert.ok(mail.headers.date);
       assert.strictEqual(mail.headerLines.find((h) => h.key === "date").line, "Date: zzzzz");
       done();
     });
@@ -866,7 +865,7 @@ describe("Mailparser Transfer encoding", () => {
   it("Missing Date header", (done) => {
     const encodedText = "Subject: test\r\n\r\n1cTW3A==";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.ok(mail.date);
       assert.ok(!mail.headers.date);
       assert.strictEqual(
@@ -887,7 +886,7 @@ describe("Mailparser Transfer encoding", () => {
       "\r\n" +
       "1cTW3A==";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.ok(mail.date);
       assert.ok(mail.receivedDate);
       assert.strictEqual(mail.date.toISOString(), "2015-02-06T23:13:51.000Z");
@@ -913,7 +912,7 @@ describe("Mailparser Transfer encoding", () => {
       "\r\n" +
       "1cTW3A==";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.ok(mail.date);
       assert.ok(mail.receivedDate);
       assert.strictEqual(mail.date.toISOString(), "2015-02-06T23:13:51.000Z");
@@ -930,7 +929,7 @@ describe("Mailparser Transfer encoding", () => {
       "\r\n" +
       "1cTW3A==";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.ok(mail.date);
       assert.ok(mail.receivedDate);
       assert.strictEqual(mail.date.toISOString(), "2015-02-06T23:13:51.000Z");
@@ -945,7 +944,7 @@ describe("Mailparser multipart content", () => {
     const encodedText =
       "Content-type: multipart/mixed; boundary=ABC\r\n\r\n--ABC\r\nContent-type: text/plain; charset=utf-8\r\n\r\nÕÄÖÜ\r\n--ABC--";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail.text, "ÕÄÖÜ");
       done();
     });
@@ -965,7 +964,7 @@ describe("Mailparser multipart content", () => {
       "--DEF--\r\n" +
       "--ABC--";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail.text, "ÕÄÖÜ");
       done();
     });
@@ -983,7 +982,7 @@ describe("Mailparser multipart content", () => {
       "ÕÄÖÜ\r\n" +
       "--ABC--";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail.text, "ÕÄÖÜ");
       done();
     });
@@ -1007,7 +1006,7 @@ describe("Mailparser multipart content", () => {
       "--DEF--\r\n" +
       "--ABC--";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail.text, "ÕÄÖÜ1");
       assert.strictEqual(mail.html, "ÕÄÖÜ2");
       done();
@@ -1029,7 +1028,7 @@ describe("Mailparser attachment info", () => {
       "--ABC--";
     const expectedHash = "9aa461e1eca4086f9230aa49c90b0c61";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail?.attachments[0]?.checksum, expectedHash);
       assert.strictEqual(mail?.attachments[0]?.size, 7);
       done();
@@ -1049,7 +1048,7 @@ describe("Mailparser attachment info", () => {
       "--ABC--";
     const expectedHash = "9aa461e1eca4086f9230aa49c90b0c61";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail?.attachments[0]?.checksum, expectedHash);
       assert.strictEqual(mail?.attachments[0]?.size, 7);
       done();
@@ -1070,7 +1069,7 @@ describe("Mailparser attachment info", () => {
       "--ABC--";
     const expectedHash = "cad0f72629a7245dd3d2cbf41473e3ca";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail?.attachments?.length, 1);
       assert.strictEqual(mail?.attachments[0]?.checksum, expectedHash);
       assert.strictEqual(mail?.attachments[0]?.size, 10);
@@ -1096,7 +1095,7 @@ describe("Mailparser attachment info", () => {
     const expectedHash = "34bca86f8cc340bbd11446ee16ee3cae";
     const buffer = Buffer.concat([buf1, buf2, buf3]);
 
-    mailParser(buffer, (_, mail) => {
+    mailParser(buffer).then((mail) => {
       assert.strictEqual(mail?.attachments?.length, 1);
       assert.strictEqual(mail?.attachments[0]?.checksum, expectedHash);
       assert.strictEqual(mail?.attachments[0]?.size, 10);
@@ -1119,7 +1118,7 @@ describe("Mailparser attachment info", () => {
       "--ABC--";
     const expectedHash = "34bca86f8cc340bbd11446ee16ee3cae";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail?.attachments?.length, 1);
       assert.strictEqual(mail?.attachments[0]?.checksum, expectedHash);
       assert.strictEqual(mail?.attachments[0]?.size, 10);
@@ -1142,7 +1141,7 @@ describe("Mailparser attachment info", () => {
       "--ABC--";
     const expectedHash = "fa3ebd6742c360b2d9652b7f78d9bd7d";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail?.attachments?.length, 1);
       assert.strictEqual(mail?.attachments[0]?.checksum, expectedHash);
       assert.strictEqual(mail?.attachments[0]?.size, 3);
@@ -1160,7 +1159,7 @@ describe("Mailparser attachment info", () => {
       "ÖÜ";
     const expectedHash = "cad0f72629a7245dd3d2cbf41473e3ca";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail?.attachments?.length, 1);
       assert.strictEqual(mail?.attachments[0]?.checksum, expectedHash);
       assert.strictEqual(mail?.attachments[0]?.size, 10);
@@ -1192,7 +1191,7 @@ describe("Mailparser attachment info", () => {
       "AAECAwQFBg==\r\n" +
       "--ABC--";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail?.attachments?.length, 3);
       done();
     });
@@ -1211,7 +1210,7 @@ describe("Mailparser attachment info", () => {
       "AAECAwQFBg==\r\n" +
       "--ABC--";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail.subject, "ABCDEF");
       assert.strictEqual(mail?.attachments?.length, 1);
       done();
@@ -1230,7 +1229,7 @@ describe("Mailparser attachment info", () => {
       "AAECAwQFBg==\r\n" +
       "--ABC--";
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail?.attachments[0]?.contentType, "application/pdf");
       done();
     });
@@ -1258,9 +1257,7 @@ describe("Mailparser attachment info", () => {
       "<p>test 2</p>\r\n" +
       "--ABC--";
 
-    mailParser(encodedText, (_, mail) => {
-      console.log(mail);
-
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(
         mail.html,
         '<p>test 1</p><br/>\n\n<div class="mailparser-attachment"><a href="cid:754dc77d28e62763c4916970d595a10f@mailparser">&lt;test.pdf&gt;</a></div><br/>\n<p>test 2</p>',
@@ -1274,7 +1271,7 @@ describe("Mailparser additional text after alternative bodies", () => {
   it.skip("should be appended to both alternatives", (done) => {
     const data = fs.readFileSync(path.join(__dirname, "/mixed.eml"));
 
-    mailParser(data, (_, mail) => {
+    mailParser(data).then((mail) => {
       assert.strictEqual(
         mail.text,
         "\nThis e-mail message has been scanned for Viruses and Content and cleared\n\nGood Morning;\n\n",
@@ -1293,7 +1290,7 @@ describe("Mailparser MBOX format", () => {
     const encodedText = "Content-Type: text/plain; charset=utf-8\r\n" + "\r\n" + "ÕÄ\r\n" + "ÖÜ"; // \r\nÕÄÖÜ
     const buffer = Buffer.from(encodedText, "utf-8");
 
-    mailParser(buffer, (_, mail) => {
+    mailParser(buffer).then((mail) => {
       assert.strictEqual(mail._isMbox, false);
       done();
     });
@@ -1308,7 +1305,7 @@ describe("Mailparser MBOX format", () => {
       "ÖÜ"; // \r\nÕÄÖÜ
     const buffer = Buffer.from(encodedText, "utf-8");
 
-    mailParser(buffer, (_, mail) => {
+    mailParser(buffer).then((mail) => {
       assert.strictEqual(mail._isMbox, true);
       done();
     });
@@ -1318,7 +1315,7 @@ describe("Mailparser MBOX format", () => {
     const encodedText =
       "Content-Type: text/plain; charset=utf-8\r\n" + "\r\n" + ">From test\r\n" + ">>From pest"; // \r\nÕÄÖÜ
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail.text, ">From test\n>>From pest");
       done();
     });
@@ -1332,7 +1329,7 @@ describe("Mailparser MBOX format", () => {
       ">From test\r\n" +
       ">>From pest"; // \r\nÕÄÖÜ
 
-    mailParser(encodedText, (_, mail) => {
+    mailParser(encodedText).then((mail) => {
       assert.strictEqual(mail.text, "From test\n>From pest");
       done();
     });
@@ -1359,7 +1356,7 @@ describe("Mailparser charset handling", () => {
         "utf8",
       );
 
-      mailParser(buffer, (_, mail) => {
+      mailParser(buffer).then((mail) => {
         assert.strictEqual(mail.text, cases[0].str);
         done();
       });
@@ -1373,7 +1370,7 @@ describe("Mailparser charset handling", () => {
         "utf8",
       );
 
-      mailParser(buffer, (_, mail) => {
+      mailParser(buffer).then((mail) => {
         assert.strictEqual(mail.text, cases[1].str);
         done();
       });
@@ -1404,7 +1401,7 @@ describe("Mailparser charset handling", () => {
         Buffer.from("\r\n\r\n1234", "utf8"),
       ]);
 
-      mailParser(buffer, (_, mail) => {
+      mailParser(buffer).then((mail) => {
         assert.strictEqual(mail.subject, cases[0].str);
         assert.strictEqual(mail.text, "1234");
         done();
@@ -1422,7 +1419,7 @@ describe("Mailparser charset handling", () => {
         "utf8",
       );
 
-      mailParser(buffer, (_, mail) => {
+      mailParser(buffer).then((mail) => {
         assert.strictEqual(mail.subject, cases[0].str);
         assert.strictEqual(mail.text, "1234");
         done();
@@ -1440,7 +1437,7 @@ describe("Mailparser charset handling", () => {
         "utf8",
       );
 
-      mailParser(buffer, (_, mail) => {
+      mailParser(buffer).then((mail) => {
         assert.strictEqual(mail.subject, cases[0].str);
         assert.strictEqual(mail.text, "1234");
         done();
@@ -1458,7 +1455,7 @@ describe("Mailparser charset handling", () => {
         "utf8",
       );
 
-      mailParser(buffer, (_, mail) => {
+      mailParser(buffer).then((mail) => {
         assert.strictEqual(mail.subject, cases[1].str);
         assert.strictEqual(mail.text, "1234");
         done();
@@ -1499,7 +1496,7 @@ describe("Mailparser charset handling", () => {
         Buffer.from("\r\n" + "\r\n" + "=00=01=02=03=FD=FE=FF", "utf8"),
       ]);
 
-      mailParser(buffer, (_, mail) => {
+      mailParser(buffer).then((mail) => {
         assert.strictEqual(mail?.attachments[0]?.filename, cases[0].str);
         done();
       });
@@ -1517,7 +1514,7 @@ describe("Mailparser charset handling", () => {
         "utf8",
       );
 
-      mailParser(buffer, (_, mail) => {
+      mailParser(buffer).then((mail) => {
         assert.strictEqual(mail?.attachments[0]?.filename, cases[0].str);
         done();
       });
@@ -1535,7 +1532,7 @@ describe("Mailparser charset handling", () => {
         "utf8",
       );
 
-      mailParser(buffer, (_, mail) => {
+      mailParser(buffer).then((mail) => {
         assert.strictEqual(mail?.attachments[0]?.filename, cases[1].str);
         done();
       });

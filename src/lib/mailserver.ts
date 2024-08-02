@@ -3,9 +3,12 @@
 /**
  * MailDev - mailserver.js
  */
-import type { Envelope, Mail, ParsedMail } from "./type";
+import type { Attachment, Envelope, Mail, ParsedMail } from "./type";
+import type { ReadStream } from "fs";
+
 import { parse as mailParser } from "./mailparser";
 import { SMTPServer } from "smtp-server";
+import { promises as pfs } from "fs";
 
 const crypto = require("crypto");
 const events = require("events");
@@ -39,7 +42,7 @@ export class MailServer {
   host: string;
 
   mailDir: string;
-  store: Mail[] = [];
+  store: Envelope[] = [];
   eventEmitter = new events.EventEmitter();
 
   smtp: typeof SMTPServer;
@@ -142,274 +145,215 @@ export class MailServer {
   }
 
   /**
-   * Get an email by id
-   */
-  getEmail(id: string, done) {
-    const mail = this.store.filter(function (element) {
-      return element.id === id;
-    })[0];
-
-    if (mail) {
-      if (mail.html) {
-        // sanitize html
-        const window = new JSDOM("").window;
-        const DOMPurify = createDOMPurify(window);
-        mail.html = DOMPurify.sanitize(mail.html, {
-          WHOLE_DOCUMENT: true, // preserve html,head,body elements
-          SANITIZE_DOM: false, // ignore DOM cloberring to preserve form id/name attributes
-          ADD_TAGS: ["link"], // allow link element to preserve external style sheets
-          ADD_ATTR: ["target"], // Preserve explicit target attributes on links
-        });
-      }
-      done(null, mail);
-    } else {
-      done(new Error("Email was not found"));
-    }
-  }
-
-  /**
-   * Returns a readable stream of the raw email
-   */
-  getRawEmail(id: string, done: (err, stream) => void) {
-    const mailDir = this.mailDir;
-    this.getEmail(id, function (err, email) {
-      if (err) return done(err, undefined);
-
-      done(null, fs.createReadStream(path.join(mailDir, id + ".eml")));
-    });
-  }
-
-  /**
-   * Returns the html of a given email
-   */
-  getEmailHTML(id: string, baseUrl, done: (err, stream) => void) {
-    if (!done && typeof baseUrl === "function") {
-      done = baseUrl;
-      baseUrl = null;
-    }
-
-    if (baseUrl) {
-      baseUrl = "//" + baseUrl;
-    }
-
-    this.getEmail(id, function (err, mail) {
-      if (err) return done(err, undefined);
-
-      let html = mail.html;
-
-      if (!mail.attachments) {
-        return done(null, html);
-      }
-
-      const embeddedAttachments = mail.attachments.filter(function (attachment) {
-        return attachment.contentId;
-      });
-
-      const getFileUrl = function (id, baseUrl, filename) {
-        return (baseUrl || "") + "/email/" + id + "/attachment/" + encodeURIComponent(filename);
-      };
-
-      if (embeddedAttachments.length) {
-        embeddedAttachments.forEach(function (attachment) {
-          const regex = new RegExp("src=(\"|')cid:" + attachment.contentId + "(\"|')", "g");
-          const replacement = 'src="' + getFileUrl(id, baseUrl, attachment.generatedFileName) + '"';
-          html = html.replace(regex, replacement);
-        });
-      }
-
-      done(null, html);
-    });
-  }
-
-  /**
-   * Read all emails
-   */
-  readAllEmail(done: (err, unread: number) => void) {
-    const allUnread = this.store.filter(function (element) {
-      return !element.isRead;
-    });
-    for (const email of allUnread) {
-      email.isRead = true;
-    }
-    done(null, allUnread.length);
-  }
-
-  getAllEmail(done: (err, mails: Mail[]) => void) {
-    done(null, [...this.store]);
-  }
-
-  deleteEmail(id: string, done: (err, deleted: boolean) => void) {
-    const self = this;
-    const emailIndex = this.store.findIndex((elt) => elt.id === id);
-    if (emailIndex < 0) {
-      return done(new Error("Email not found"), false);
-    }
-    const mail = this.store[emailIndex];
-
-    // delete raw email
-    fs.unlink(path.join(this.mailDir, id + ".eml"), function (err) {
-      if (err) {
-        logger.error(err);
-      } else {
-        self.eventEmitter.emit("delete", { id, index: emailIndex });
-      }
-    });
-
-    if (mail.attachments.length > 0) {
-      fs.rm(path.join(this.mailDir, id), { recursive: true }, function (err) {
-        if (err) throw err;
-      });
-    }
-
-    logger.warn("Deleting email - %s", mail.subject);
-
-    this.store.splice(emailIndex, 1);
-
-    done(null, true);
-  }
-
-  deleteAllEmail(done: (err, deleted: boolean) => void) {
-    logger.warn("Deleting all email");
-
-    this.clearMailDir();
-    this.store.length = 0;
-    this.eventEmitter.emit("delete", { id: "all" });
-
-    done(null, true);
-  }
-
-  /**
-   * Delete everything in the mail directory
-   */
-  clearMailDir() {
-    const mailDir = this.mailDir;
-    fs.readdir(mailDir, function (err, files) {
-      if (err) throw err;
-
-      files.forEach(function (file) {
-        fs.rm(path.join(mailDir, file), { recursive: true }, function (err) {
-          if (err) throw err;
-        });
-      });
-    });
-  }
-
-  /**
-   * Returns the content type and a readable stream of the file
-   */
-  getEmailAttachment(
-    id: string,
-    filename: string,
-    done: (err, contentType: string | undefined, stream) => void,
-  ) {
-    const mailDir = this.mailDir;
-    this.getEmail(id, function (err, mail) {
-      if (err) return done(err, undefined, undefined);
-
-      if (!mail.attachments || !mail.attachments.length) {
-        return done(new Error("Email has no attachments"), undefined, undefined);
-      }
-
-      const match = mail.attachments.filter(function (attachment) {
-        return attachment.generatedFileName === filename;
-      })[0];
-
-      if (!match) {
-        return done(new Error("Attachment not found"), undefined, undefined);
-      }
-
-      done(null, match.contentType, fs.createReadStream(path.join(mailDir, id, match.contentId)));
-    });
-  }
-
-  /**
    * Set Auto Relay Mode, automatic send email to recipient
    */
   setAutoRelayMode(enabled: boolean, rules: Object, emailAddress: string) {
     outgoing.setAutoRelayMode(enabled, rules, emailAddress);
   }
 
+  relayMail(mail: Mail, isAutoRelay: boolean = true): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.getRawEmail(mail.id)
+        .then((rawEmailStream) => {
+          outgoing.relayMail(mail, rawEmailStream, isAutoRelay, (err) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve();
+            }
+          });
+        })
+        .catch((err) => {
+          logger.error("Mail Stream Error: ", err);
+          reject(err);
+        });
+    });
+  }
+
   /**
-   * Relay a given email, accepts a mail id or a mail object
+   * Get an email by id
    */
-  relayMail(idOrMailObject, isAutoRelay, done) {
-    const self = this;
-    if (!outgoing.isEnabled()) {
-      return done(new Error("Outgoing mail not configured"));
-    }
-
-    // isAutoRelay is an option argument
-    if (typeof isAutoRelay === "function") {
-      done = isAutoRelay;
-      isAutoRelay = false;
-    }
-
-    // If we receive a email id, get the email object
-    if (typeof idOrMailObject === "string") {
-      this.getEmail(idOrMailObject, function (err, email) {
-        if (err) return done(err);
-        self.relayMail(email, isAutoRelay, done);
+  async getEmail(id: string): Promise<Mail> {
+    const envelope = this.store.find(function (elt) {
+      return elt.id === id;
+    });
+    if (envelope) {
+      return getDiskEmail(this.mailDir, envelope).then((mail) => {
+        if (mail.html) {
+          // sanitize html
+          const window = new JSDOM("").window;
+          const DOMPurify = createDOMPurify(window);
+          mail.html = DOMPurify.sanitize(mail.html, {
+            WHOLE_DOCUMENT: true, // preserve html,head,body elements
+            SANITIZE_DOM: false, // ignore DOM cloberring to preserve form id/name attributes
+            ADD_TAGS: ["link"], // allow link element to preserve external style sheets
+            ADD_ATTR: ["target"], // Preserve explicit target attributes on links
+          });
+        }
+        return mail;
       });
-      return;
+    } else {
+      throw new Error(`No email with id: ${id}`);
     }
+  }
 
-    const mail = idOrMailObject;
+  /**
+   * Returns a readable stream of the raw email
+   */
+  async getRawEmail(id: string): Promise<ReadStream> {
+    const emlPath = path.join(this.mailDir, id + ".eml");
+    if (fs.existsSync(emlPath)) {
+      return fs.createReadStream(emlPath);
+    } else {
+      throw new Error(`No email with id: ${id}`);
+    }
+  }
 
-    this.getRawEmail(mail.id, function (err, rawEmailStream) {
-      if (err) {
-        logger.error("Mail Stream Error: ", err);
-        return done(err);
+  /**
+   * Returns the html of a given email
+   */
+  async getEmailHTML(id: string, baseUrl: string = ""): Promise<string> {
+    baseUrl = baseUrl ? "//" + baseUrl : "";
+
+    const mail = await this.getEmail(id);
+
+    if (typeof mail.html === "string") {
+      var html: string = mail.html;
+
+      const getFileUrl = function (filename) {
+        return baseUrl + "/email/" + id + "/attachment/" + encodeURIComponent(filename);
+      };
+
+      for (const attachment of mail.attachments) {
+        if (attachment.contentId) {
+          const regex = new RegExp("src=(\"|')cid:" + attachment.contentId + "(\"|')", "g");
+          const replacement = 'src="' + getFileUrl(attachment.generatedFileName) + '"';
+          html = html.replace(regex, replacement);
+        }
       }
 
-      outgoing.relayMail(mail, rawEmailStream, isAutoRelay, done);
+      return html;
+    } else {
+      throw new Error(`No html in email ${id}`);
+    }
+  }
+
+  /**
+   * Set all emails to read
+   */
+  readAllEmail(): number {
+    return this.store.reduce(function (count, elt) {
+      if (!elt.isRead) {
+        count++;
+      }
+      return count;
+    }, 0);
+  }
+
+  getAllEmail(): Promise<Mail[]> {
+    const emails = this.store.map((elt) => {
+      return this.getEmail(elt.id);
     });
+    return Promise.all(emails);
+  }
+
+  async deleteEmail(id: string): Promise<boolean> {
+    const self = this;
+    const emailIndex = this.store.findIndex((elt) => elt.id === id);
+    if (emailIndex < 0) {
+      throw new Error(`Email ${id} not found`);
+    }
+    const mail = this.store[emailIndex];
+    logger.warn("Deleting email - %s", mail.id);
+
+    return Promise.all([
+      pfs.unlink(path.join(this.mailDir, id + ".eml")).catch((err) => {
+        throw new Error(`Error when deleteing ${id}`);
+      }),
+      pfs.rm(path.join(this.mailDir, id), { recursive: true, force: true }).catch((err) => {
+        throw new Error(`Error when deleteing ${id} attachments: ${err}`);
+      }),
+    ]).then(() => {
+      self.eventEmitter.emit("delete", { id, index: emailIndex });
+      return true;
+    });
+  }
+
+  async deleteAllEmail(): Promise<boolean> {
+    logger.warn("Deleting all email");
+
+    this.clearMailDir();
+    this.store.length = 0;
+    this.eventEmitter.emit("delete", { id: "all" });
+
+    return true;
+  }
+
+  /**
+   * Delete everything in the mail directory
+   */
+  async clearMailDir(): Promise<void[]> {
+    const self = this;
+    const files = await pfs.readdir(this.mailDir);
+
+    const rms = files.map(function (file) {
+      return pfs.rm(path.join(self.mailDir, file), { recursive: true });
+    });
+
+    return Promise.all(rms);
+  }
+
+  /**
+   * Returns the content type and a readable stream of the file
+   */
+  async getEmailAttachment(id: string, filename: string): Promise<Attachment> {
+    const mail = await this.getEmail(id);
+
+    if (mail.attachments.length === 0) {
+      throw new Error("Email has no attachments");
+    }
+
+    for (const attachment of mail.attachments) {
+      if (attachment.filename === filename) {
+        return attachment;
+      }
+    }
+
+    throw new Error(`Attachment ${filename} not found`);
   }
 
   /**
    * Download a given email
    */
-  getEmailEml(
-    id,
-    done: (err, type: string | undefined, filename: string | undefined, stream) => void,
-  ) {
-    const mailDir = this.mailDir;
-    this.getEmail(id, function (err, email) {
-      if (err) return done(err, undefined, undefined, undefined);
-
-      const filename = email.id + ".eml";
-
-      done(null, "message/rfc822", filename, fs.createReadStream(path.join(mailDir, id + ".eml")));
-    });
+  async getEmailEml(id): Promise<[string, string, ReadStream]> {
+    const filename = id + ".eml";
+    const stream = await this.getRawEmail(id);
+    return ["message/rfc822", filename, stream];
   }
 
-  loadMailsFromDirectory() {
-    const persistencePath = fs.realpathSync(this.mailDir);
+  async loadMailsFromDirectory(): Promise<void[]> {
     const self = this;
-    fs.readdir(persistencePath, function (err, files) {
-      if (err) {
-        logger.error("Error during reading of the mailDir %s", persistencePath);
-      } else {
-        self.store.length = 0;
-        files.forEach(function (file) {
-          const filePath = persistencePath + "/" + file;
-          if (path.parse(file).ext === ".eml") {
-            fs.readFile(filePath, "utf8", async function (err, data) {
-              const idMail = path.parse(file).name;
-              if (err) {
-                logger.error("Error when opening the file %s (%s)", filePath, err);
-              } else {
-                mailParser(data, (err, mail) => {
-                  if (err) {
-                    logger.error("Error when readeing mail from file: %s", err);
-                  }
-                  saveEmailToStore(self, idMail, mail);
-                });
-              }
-            });
-          }
-        });
-      }
+    const persistencePath = await pfs.realpath(this.mailDir);
+    const files = await pfs.readdir(persistencePath).catch((err) => {
+      logger.error(`Error during reading of the mailDir ${persistencePath}`);
+      throw new Error(`Error during reading of the mailDir ${persistencePath}`);
     });
+
+    self.store.length = 0;
+    const saved = files.map(async function (file) {
+      const envelope = {
+        id: path.parse(file).name,
+        from: undefined,
+        to: undefined,
+        host: undefined,
+        remoteAddress: undefined,
+        isRead: false,
+      };
+      const email = await getDiskEmail(self.mailDir, envelope);
+      return saveEmailToStore(self, email);
+    });
+
+    return Promise.all(saved);
   }
 }
 
@@ -430,9 +374,7 @@ function onSmtpError(err) {
  */
 
 function createMailDir(mailDir: string) {
-  if (!fs.existsSync(mailDir)) {
-    fs.mkdirSync(mailDir);
-  }
+  fs.mkdirSync(mailDir, { recursive: true });
   logger.info("MailDev using directory %s", mailDir);
 }
 
@@ -451,71 +393,68 @@ function getHideExtensionOptions(extensions) {
   }, {});
 }
 
-function saveAttachment(mailServer: MailServer, id, attachment) {
-  if (!fs.existsSync(path.join(mailServer.mailDir, id))) {
-    fs.mkdirSync(path.join(mailServer.mailDir, id));
-  }
+async function saveAttachment(mailServer: MailServer, id, attachment): Promise<void> {
+  await pfs.mkdir(path.join(mailServer.mailDir, id), { recursive: true });
 
   const contentId =
     attachment.contentId ??
     crypto.createHash("md5").update(Buffer.from(attachment.filename, "utf-8")).digest("hex") +
       "@mailparser";
 
-  fs.writeFileSync(path.join(mailServer.mailDir, id, contentId), attachment.content);
+  return pfs.writeFile(path.join(mailServer.mailDir, id, contentId), attachment.content);
+}
+
+async function getDiskEmail(mailDir: string, envelope: Envelope): Promise<Mail> {
+  const emlPath = path.join(mailDir, envelope.id + ".eml");
+  const data = await pfs.readFile(emlPath, "utf8");
+  const parsedMail = await mailParser(data);
+  return buildMail(mailDir, envelope, parsedMail);
+}
+
+async function buildMail(
+  mailDir: string,
+  envelope: Envelope,
+  parsedMail: ParsedMail,
+): Promise<Mail> {
+  const emlPath = path.join(mailDir, envelope.id + ".eml");
+  const stat = await pfs.stat(emlPath);
+
+  const onlyAddress = (xs) => (xs || []).map((x) => x.address);
+  const calculatedBcc = calculateBcc(
+    onlyAddress(envelope.to),
+    onlyAddress(parsedMail.to),
+    onlyAddress(parsedMail.cc),
+  );
+
+  return {
+    id: envelope.id,
+    envelope,
+    calculatedBcc,
+    size: stat.size,
+    sizeHuman: utils.formatBytes(stat.size),
+    ...parsedMail,
+  };
 }
 
 /**
  * SMTP Server stream and helper functions
  */
-
 // Save an email object on stream end
-function saveEmailToStore(
-  mailServer: MailServer,
-  id: string,
-  parseMail: ParsedMail,
-  from = undefined,
-  to = undefined,
-  host = undefined,
-  remoteAddress = undefined,
-) {
-  const emlPath = path.join(mailServer.mailDir, id + ".eml");
-  const stat = fs.statSync(emlPath);
+async function saveEmailToStore(mailServer: MailServer, mail: Mail): Promise<void> {
+  logger.log("Saving email: %s, id: %s", mail.subject, mail.id);
 
-  const onlyAddress = (xs) => (xs || []).map((x) => x.address);
-  const calculatedBcc = calculateBcc(
-    onlyAddress(to),
-    onlyAddress(parseMail.to),
-    onlyAddress(parseMail.cc),
+  await Promise.all(
+    mail.attachments.map((attachment) => {
+      return saveAttachment(mailServer, mail.id, attachment);
+    }),
   );
 
-  const envelope = {
-    from,
-    to,
-    host,
-    remoteAddress,
-  };
-
-  const mail = {
-    id,
-    envelope,
-    calculatedBcc,
-    size: stat.size,
-    sizeHuman: utils.formatBytes(stat.size),
-    isRead: false,
-    ...parseMail,
-  };
-
-  logger.log("Saving email: %s, id: %s", mail.subject, id);
-  for (const attachment of mail.attachments) {
-    saveAttachment(mailServer, id, attachment);
-  }
-
-  mailServer.store.push(mail);
+  mailServer.store.push(mail.envelope);
   mailServer.eventEmitter.emit("new", mail);
 
   if (outgoing.isAutoRelayEnabled()) {
-    mailServer.relayMail(id, true, function (err) {
-      if (err) logger.error("Error when relaying email", err);
+    await mailServer.relayMail(mail).catch((err) => {
+      logger.error("Error when relaying email", err);
     });
   }
 }
@@ -523,28 +462,25 @@ function saveEmailToStore(
 /**
  *  Handle smtp-server onData stream
  */
-function handleDataStream(mailServer: MailServer, stream, session, callback) {
-  const id = utils.makeId();
-  const emlStream = fs.createWriteStream(path.join(mailServer.mailDir, id + ".eml"));
-
-  stream.pipe(emlStream);
-  mailParser(stream, (err, mail) => {
-    if (err) {
-      logger.error("Error when parsing mail: %s", err);
-    }
-    saveEmailToStore(
-      mailServer,
-      id,
-      mail,
-      session.envelope.mailFrom,
-      session.envelope.rcptTo,
-      session.hostNameAppearsAs,
-      session.remoteAddress,
-    );
-  });
+async function handleDataStream(mailServer: MailServer, stream, session, callback): Promise<void> {
+  const envelope = {
+    id: utils.makeId(),
+    from: session.envelope.mailFrom,
+    to: session.envelope.rcptTo,
+    host: session.hostNameAppearsAs,
+    remoteAddress: session.remoteAddress,
+    isRead: false,
+  };
+  const emlStream = fs.createWriteStream(path.join(mailServer.mailDir, envelope.id + ".eml"));
 
   stream.on("end", function () {
     emlStream.end();
-    callback(null, "Message queued as " + id);
+    callback(null, "Message queued as " + envelope.id);
   });
+
+  stream.pipe(emlStream);
+  const parsed = await mailParser(stream);
+
+  const mail = await buildMail(mailServer.mailDir, envelope, parsed);
+  return saveEmailToStore(mailServer, mail);
 }

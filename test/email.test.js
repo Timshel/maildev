@@ -73,19 +73,18 @@ describe("email", () => {
         // Only return matching emails - since we use this new event in multiple functions
         // we need to ensure it's the email that we want.
         if (email.subject === emailForTest.subject) {
-          maildev.getEmailHTML(email.id, async (_, html) => {
-            transporter.close();
-            const contentWithoutNewLine = html.replace(/\n/g, "");
-            try {
+          maildev
+            .getEmailHTML(email.id)
+            .then((html) => {
+              transporter.close();
+              const contentWithoutNewLine = html.replace(/\n/g, "");
               assert.strictEqual(
                 contentWithoutNewLine,
                 "<html><head></head><body><p>The wax at the bank was surfer wax!!!</p></body></html>",
               );
-            } catch (err) {
-              return reject(err);
-            }
-            resolve();
-          });
+              resolve();
+            })
+            .catch(reject);
         }
       });
 
@@ -111,19 +110,18 @@ describe("email", () => {
         // Only return matching emails - since we use this new event in multiple functions
         // we need to ensure it's the email that we want.
         if (email.subject === emailForTest.subject) {
-          maildev.getEmailHTML(email.id, async (_, html) => {
-            transporter.close();
-            const contentWithoutNewLine = html.replace(/\n/g, "");
-            try {
+          maildev
+            .getEmailHTML(email.id)
+            .then((html) => {
+              transporter.close();
+              const contentWithoutNewLine = html.replace(/\n/g, "");
               assert.strictEqual(
                 contentWithoutNewLine,
                 '<html><head></head><body><table style="border:1px solid red"><tbody><tr><td>A1</td><td>B1</td></tr><tr><td>A2</td><td>B2</td></tr></tbody></table></body></html>',
               );
-            } catch (err) {
-              return reject(err);
-            }
-            resolve();
-          });
+              resolve();
+            })
+            .catch(reject);
         }
       });
 
@@ -148,17 +146,16 @@ describe("email", () => {
         // Only return matching emails - since we use this new event in multiple functions
         // we need to ensure it's the email that we want.
         if (email.subject === emailForTest.subject) {
-          maildev.getEmailHTML(email.id, async (_, html) => {
-            transporter.close();
-            const contentWithoutNewLine = html.replace(/\n/g, "");
-            try {
+          maildev
+            .getEmailHTML(email.id)
+            .then((html) => {
+              transporter.close();
+              const contentWithoutNewLine = html.replace(/\n/g, "");
               const action = contentWithoutNewLine.match(/action="(.*?)"/)[1];
               assert.strictEqual(action, "mailto:example@example.com?subject=Form Submission");
-            } catch (err) {
-              reject(err);
-            }
-            resolve();
-          });
+              resolve();
+            })
+            .catch(reject);
         }
       });
 

@@ -16,26 +16,21 @@ module.exports = function (app, mailserver, basePathname) {
 
   // Get all emails
   router.get("/email", compression(), function (req, res) {
-    mailserver.getAllEmail(function (err, emailList) {
-      if (err) return res.status(404).json([]);
-      if (req.query) {
-        const filteredEmails = filterEmails(emailList, req.query);
-        res.json(filteredEmails);
-      } else {
-        res.json(emailList);
-      }
-    });
+    mailserver
+      .getAllEmail()
+      .then((mails) => res.json(req.query ? filterEmails(mails, req.query) : mails))
+      .catch((err) => res.status(404).json([]));
   });
 
   // Get single email
   router.get("/email/:id", function (req, res) {
-    mailserver.getEmail(req.params.id, function (err, email) {
-      if (err) return res.status(404).json({ error: err.message });
-
-      email.isRead = true; // Mark the email as 'read'
-
-      res.json(email);
-    });
+    mailserver
+      .getEmail(req.params.id)
+      .then((mail) => {
+        mail.envelope.isRead = true; // Mark the email as 'read'
+        res.json(mail);
+      })
+      .catch((err) => res.status(404).json({ error: err.message }));
   });
 
   // Read email
@@ -48,73 +43,65 @@ module.exports = function (app, mailserver, basePathname) {
 
   // Read all emails
   router.patch("/email/read-all", function (req, res) {
-    mailserver.readAllEmail(function (err, count) {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json(count);
-    });
+    const count = mailserver.readAllEmail();
+    res.json(count);
   });
 
   // Delete all emails
   router.delete("/email/all", function (req, res) {
-    mailserver.deleteAllEmail(function (err) {
-      if (err) return res.status(500).json({ error: err.message });
-
-      res.json(true);
-    });
+    mailserver
+      .deleteAllEmail()
+      .then((count) => res.json(count))
+      .catch((err) => res.status(500).json({ error: err.message }));
   });
 
   // Delete email by id
   router.delete("/email/:id", function (req, res) {
-    mailserver.deleteEmail(req.params.id, function (err) {
-      if (err) return res.status(500).json({ error: err.message });
-
-      res.json(true);
-    });
+    mailserver
+      .deleteEmail(req.params.id)
+      .then((deleted) => res.json(deleted))
+      .catch((err) => res.status(500).json({ error: err.message }));
   });
 
   // Get Email HTML
   router.get("/email/:id/html", function (req, res) {
     // Use the headers over hostname to include any port
     const baseUrl = req.headers.host + (req.baseUrl || "");
-
-    mailserver.getEmailHTML(req.params.id, baseUrl, function (err, html) {
-      if (err) return res.status(404).json({ error: err.message });
-
-      res.send(html);
-    });
+    mailserver
+      .getEmailHTML(req.params.id, baseUrl)
+      .then((html) => res.send(html))
+      .catch((err) => res.status(404).json({ error: err.message }));
   });
 
   // Serve Attachments
   router.get("/email/:id/attachment/:filename", function (req, res) {
-    mailserver.getEmailAttachment(
-      req.params.id,
-      req.params.filename,
-      function (err, contentType, readStream) {
-        if (err) return res.status(404).json("File not found");
-
-        res.contentType(contentType);
-        readStream.pipe(res);
-      },
-    );
+    mailserver
+      .getEmailAttachment(req.params.id, req.params.filename)
+      .then((attachement) => {
+        res.contentType(attachement.contentType);
+        res.send(attachement.content);
+      })
+      .catch((err) => res.status(404).json({ error: err.message }));
   });
 
   // Serve email.eml
   router.get("/email/:id/download", function (req, res) {
-    mailserver.getEmailEml(req.params.id, function (err, contentType, filename, readStream) {
-      if (err) return res.status(404).json("File not found");
-
-      res.setHeader("Content-disposition", "attachment; filename=" + filename);
-      res.contentType(contentType);
-      readStream.pipe(res);
-    });
+    mailserver
+      .getEmailEml(req.params.id)
+      .then(([contentType, filename, stream]) => {
+        res.setHeader("Content-disposition", "attachment; filename=" + filename);
+        res.contentType(contentType);
+        stream.pipe(res);
+      })
+      .catch((err) => res.status(404).json({ error: err.message }));
   });
 
   // Get email source from .eml file
   router.get("/email/:id/source", function (req, res) {
-    mailserver.getRawEmail(req.params.id, function (err, readStream) {
-      if (err) return res.status(404).json("File not found");
-      readStream.pipe(res);
-    });
+    mailserver
+      .getRawEmail(req.params.id)
+      .then((stream) => stream.pipe(res))
+      .catch((err) => res.status(404).json({ error: err.message }));
   });
 
   // Get any config settings for display
@@ -129,26 +116,26 @@ module.exports = function (app, mailserver, basePathname) {
 
   // Relay the email
   router.post("/email/:id/relay/:relayTo?", function (req, res) {
-    mailserver.getEmail(req.params.id, function (err, email) {
-      if (err) return res.status(404).json({ error: err.message });
-
-      if (req.params.relayTo) {
-        if (emailRegexp.test(req.params.relayTo)) {
-          email.to = [{ address: req.params.relayTo }];
-          email.envelope.to = [{ address: req.params.relayTo, args: false }];
-        } else {
-          return res.status(400).json({
-            error: "Incorrect email address provided :" + req.params.relayTo,
-          });
+    mailserver
+      .getEmail(req.params.id)
+      .then((mail) => {
+        if (req.params.relayTo) {
+          if (emailRegexp.test(req.params.relayTo)) {
+            mail.to = [{ address: req.params.relayTo }];
+            mail.envelope.to = [{ address: req.params.relayTo, args: false }];
+          } else {
+            return res.status(400).json({
+              error: "Incorrect email address provided :" + req.params.relayTo,
+            });
+          }
         }
-      }
 
-      mailserver.relayMail(email, function (err) {
-        if (err) return res.status(500).json({ error: err.message });
-
-        res.json(true);
-      });
-    });
+        return mailserver
+          .relayMail(mail, false)
+          .then(() => res.json(true))
+          .catch((err) => res.status(500).json({ error: err.message }));
+      })
+      .catch((err) => res.status(404).json({ error: err.message }));
   });
 
   // Health check

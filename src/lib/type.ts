@@ -147,6 +147,8 @@ export interface Attachment extends MailParser.Attachment {
    * `contentId` without `<` and `>`.
    */
   cid?: string | undefined; // e.g. '5.1321281380971@localhost'
+
+  generatedFileName: string;
 }
 
 export interface ParsedMail {
@@ -220,10 +222,12 @@ export interface ParsedMail {
 }
 
 export interface Envelope {
+  id: string;
   from: string | undefined;
   to: string | undefined;
   host: string | undefined;
   remoteAddress: string | undefined;
+  isRead: boolean;
 }
 
 export interface Mail extends ParsedMail {
@@ -231,6 +235,5 @@ export interface Mail extends ParsedMail {
   calculatedBcc: string[];
   size: number;
   sizeHuman: string;
-  isRead: boolean;
   envelope: Envelope;
 }

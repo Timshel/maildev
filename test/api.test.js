@@ -99,18 +99,12 @@ describe("API", () => {
 
       await delay(100);
 
-      return new Promise((resolve) => {
-        maildev.getAllEmail(async (err, emails) => {
-          if (err) return resolve(err);
-
-          assert.strictEqual(Array.isArray(emails), true);
-          assert.strictEqual(emails.length, 1);
-          assert.strictEqual(emails[0].text, emailOpts.text);
-
-          await waitMailDevShutdown(maildev);
-          await transporter.close();
-          return resolve();
-        });
+      return maildev.getAllEmail().then((emails) => {
+        assert.strictEqual(Array.isArray(emails), true);
+        assert.strictEqual(emails.length, 1);
+        assert.strictEqual(emails[0].text, emailOpts.text);
+        waitMailDevShutdown(maildev);
+        return transporter.close();
       });
     });
 

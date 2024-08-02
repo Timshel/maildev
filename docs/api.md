@@ -86,10 +86,9 @@ maildev.listen()
 // Print new emails to the console as they come in
 maildev.on('new', function (email) {
   if (email.to.address === 'johnny.utah@fbi.gov') {
-    maildev.relayMail(email, function (err) {
-      if (err) return console.log(err)
-      console.log('Email has been relayed!')
-    })
+    maildev.relayMail(email)
+      .then(()=> console.log('Email has been relayed!') )
+      .catch(console.log)
   }
 })
 ```
@@ -102,21 +101,19 @@ maildev.on('new', function (email) {
 
 **close(callback)** - Stops the smtp server
 
-**getEmail(id, callback)** - Accepts email id, returns email object
+**getEmail(id): Promise<Mail>** - Accepts email id, returns email object
 
-**getRawEmail(id, callback)** - Returns a readable stream of the raw email
+**getRawEmail(id): Promise<ReadStream>** - Returns a readable stream of the raw email
 
-**getAllEmail(callback)** - Returns array of all email
+**getAllEmail(callback): Promise<Mail[]>** - Returns array of all email
 
-**deleteEmail(id, callback)** - Deletes a given email by id
+**deleteEmail(id): Promise<boolean>** - Deletes a given email by id
 
-**deleteAllEmail(callback)** - Deletes all email and their attachments
+**deleteAllEmail(): Promise<boolean>** - Deletes all email and their attachments
 
-**getEmailAttachment(id, filename, callback)** - Returns the content type and a
-readable stream of the file. Example callback:
-`function(err, contentType, readStream){...`
+**getEmailAttachment(id, filename): Promise<Attachment>** - Returns the specific attachment
 
-**relayMail(id, callback)** - If configured, this will relay/send the given
+**relayMail(id): Promise<void>** - If configured, this will relay/send the given
 email to it's "to" address. Also accepts an email object instead of id.
 
 **setAutoRelayMode(enabled, rules)** - If relay configured, this will auto relay/send emails received
