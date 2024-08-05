@@ -199,7 +199,7 @@ function generateFileNames(fileNames, fileName, contentType) {
   let defaultExt = "";
 
   if (contentType) {
-    const ext = mime.getExtension(contentType);
+    const ext = mime.extension(contentType); // renamed as getExtension in > 2.0
     defaultExt = ext ? "." + ext : "";
   }
 

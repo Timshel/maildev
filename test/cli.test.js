@@ -3,7 +3,7 @@
 const spawn = require("child_process").spawn;
 const path = require("path");
 const expect = require("expect").expect;
-const utils = require("../src/lib/utils");
+const utils = require("../dist/lib/utils");
 
 const bin = path.join(__dirname, "../bin/maildev");
 

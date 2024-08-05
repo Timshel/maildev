@@ -7,36 +7,24 @@
 
 const assert = require("assert");
 const SMTPConnection = require("nodemailer/lib/smtp-connection");
-
-const MailDev = require("../dist/index.js");
-
-function waitMailDevShutdown(maildev) {
-  return new Promise((resolve) => {
-    maildev.close(() => resolve());
-  });
-}
-
+const MailServer = require("../dist/lib/mailserver").MailServer;
 const port = 9025;
 
 describe("mailserver", () => {
   let maildev;
 
   before(function (done) {
-    maildev = new MailDev({
-      incomingUser: "bodhi",
-      incomingPass: "surfing",
-      silent: true,
-      disableWeb: true,
-      smtp: port,
+    maildev = new MailServer({
+      port: port,
+      auth: { user: "bodhi", pass: "surfing" },
     });
-    maildev.listen(done);
+    maildev.listen().then(() => done());
   });
 
-  after(async () => {
-    await waitMailDevShutdown(maildev);
-    return new Promise((resolve) => {
+  after((done) => {
+    maildev.close().finally(() => {
       maildev.removeAllListeners();
-      resolve();
+      done();
     });
   });
 
@@ -47,17 +35,15 @@ describe("mailserver", () => {
       process.removeListener("uncaughtException", originalHandler);
       process.setMaxListeners(0);
       return new Promise((resolve) => {
-        const maildevConflict = new MailDev({
-          disableWeb: true,
-          silent: true,
-          smtp: port,
+        const maildevConflict = new MailServer({
+          port: port,
         });
         maildevConflict.listen();
 
         process.on("uncaughtException", async (err) => {
           if (err.code === "EADDRINUSE") {
             process.listeners("uncaughtException").push(originalHandler);
-            await waitMailDevShutdown(maildevConflict);
+            await maildevConflict.close();
             resolve();
           }
         });

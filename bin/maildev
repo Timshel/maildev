@@ -3,8 +3,11 @@
 const path = require('path')
 const fs = require('fs')
 
-const index = path.join(path.dirname(fs.realpathSync(__filename)), '../dist/index.js')
-const MailDev = require(index)
+const root = path.join(path.dirname(fs.realpathSync(__filename)), '../dist')
 
-const maildev = new MailDev()
-maildev.listen()
+const MailDev = require(`${root}/index`).MailDev
+const cliOptions = require(`${root}/lib/options`).cliOptions
+
+const options = cliOptions();
+const maildev = new MailDev(options);
+maildev.listen();

@@ -10,17 +10,15 @@ const http = require("http");
 const path = require("path");
 const nodemailer = require("nodemailer");
 
-const MailDev = require("../dist/index.js");
+const MailDev = require("../dist/index").MailDev;
 
 const port = 9025;
-const web = 8080;
 
 const defaultMailDevOpts = {
-  disableWeb: false,
   silent: true,
-  smtp: port,
-  web,
-  ip: "0.0.0.0",
+  port: port,
+  host: "0.0.0.0",
+  web: { disabled: true },
 };
 
 const createTransporter = async () => {
@@ -43,14 +41,13 @@ describe("email", () => {
 
   before(function (done) {
     maildev = new MailDev(defaultMailDevOpts);
-    maildev.listen(done);
+    maildev.listen().then(() => done());
   });
 
-  after(async () => {
-    await waitMailDevShutdown(maildev);
-    return new Promise((resolve) => {
+  after((done) => {
+    maildev.close().finally(() => {
       maildev.removeAllListeners();
-      resolve();
+      done();
     });
   });
 

@@ -3,7 +3,7 @@
 const jest = require("jest-mock");
 const expect = require("expect").expect;
 const SMTPServer = require("smtp-server").SMTPServer;
-const outgoing = require("../src/lib/outgoing");
+const Outgoing = require("../dist/lib/outgoing").Outgoing;
 const smptHelpers = require("../dist/lib/helpers/smtp");
 
 let lastPort = 8025;
@@ -16,9 +16,8 @@ describe("outgoing", () => {
       const smtpserver = new SMTPServer();
       smtpserver.listen(port, (err) => {
         expect(typeof err).toBe("undefined");
-        outgoing.setup();
-        expect(outgoing.isEnabled()).toBe(true);
-        outgoing.getClient().on("end", () => {
+        const outgoing = new Outgoing();
+        outgoing.client.on("end", () => {
           smtpserver.close(done);
         });
         outgoing.close();
@@ -28,30 +27,35 @@ describe("outgoing", () => {
 
   describe("relayMail", () => {
     it("should set auto relay mode without an initialised client", () => {
-      const spy = jest.spyOn(require("../src/lib/logger"), "info");
+      const spy = jest.spyOn(require("../dist/lib/logger"), "info");
+      const outgoing = new Outgoing();
+
       // Close the SMTP server before doing anything, an investigation is needed to find where the SMTP connection is not closed
-      outgoing.getClient().on("end", () => {
+      outgoing.client.on("end", () => {
         outgoing.setAutoRelayMode();
 
-        expect(outgoing.getConfig().autoRelay).toBe(false);
+        expect(outgoing.autoRelay).toBe(false);
         expect(spy).toHaveBeenCalledWith("Outgoing mail not configured - Auto relay mode ignored");
         spy.mockRestore();
+        outgoing.close();
       });
     });
 
     it("should set auto relay mode with a wrong rules", (done) => {
       const rules = "testrule";
-      const spy = jest.spyOn(require("../src/lib/logger"), "error");
-      outgoing.setup();
+      const spy = jest.spyOn(require("../dist/lib/logger"), "error");
+      const outgoing = new Outgoing();
 
       // TODO: Use the expect toThrow helper, I will need to update the version of the expect library before being able to do it
       try {
-        outgoing.setAutoRelayMode(true, rules);
+        outgoing.setAutoRelayMode(true, undefined, rules);
       } catch (e) {
         expect(e.message).toBe("ENOENT: no such file or directory, open 'testrule'");
-        expect(spy).toHaveBeenCalledWith(`Error reading config file at ${rules}`);
+        expect(spy).toHaveBeenCalledWith(
+          "Error reading rules file at testrule: Error: ENOENT: no such file or directory, open 'testrule'",
+        );
         spy.mockRestore();
-
+        outgoing.close();
         done();
       }
     });
@@ -59,14 +63,13 @@ describe("outgoing", () => {
     it("should set an auto relay email address", (done) => {
       const rules = ["test"];
       const emailAddress = "test@test.com";
-      const spy = jest.spyOn(require("../src/lib/logger"), "info");
+      const spy = jest.spyOn(require("../dist/lib/logger"), "info");
+      const outgoing = new Outgoing();
 
-      outgoing.setup();
-      outgoing.setAutoRelayMode(true, rules, emailAddress);
-      const config = outgoing.getConfig();
-      expect(config.autoRelay).toBe(true);
-      expect(config.autoRelayRules).toBe(rules);
-      expect(config.autoRelayAddress).toBe(emailAddress);
+      outgoing.setAutoRelayMode(true, emailAddress, rules);
+      expect(outgoing.autoRelay).toBe(true);
+      expect(outgoing.autoRelayRules).toBe(rules);
+      expect(outgoing.autoRelayAddress).toBe(emailAddress);
 
       expect(spy).toHaveBeenCalledWith(
         [
@@ -76,6 +79,7 @@ describe("outgoing", () => {
         ].join(", "),
       );
 
+      outgoing.close();
       done();
     });
 
@@ -89,6 +93,7 @@ describe("outgoing", () => {
         subject: "Test email",
       };
       const message = "A test email body";
+      const outgoing = new Outgoing({ port });
 
       // When the email is full received we deem this successful
       const emailReceived = (emailBody) => {
@@ -111,7 +116,6 @@ describe("outgoing", () => {
       });
       smtpserver.listen(port, (err) => {
         expect(typeof err).toBe("undefined");
-        outgoing.setup(null, port);
         outgoing.relayMail(email, message, false, (err) => {
           expect(err).toNotExist();
           // emailReceived should now be called to close this test
@@ -126,10 +130,13 @@ describe("outgoing", () => {
       const smtpserver = new SMTPServer({
         onAuth: smptHelpers.createOnAuthCallback(username, password),
       });
+      const outgoing = new Outgoing({
+        port,
+        auth: { user: username, pass: password },
+      });
+
       smtpserver.listen(port, (err) => {
         expect(typeof err).toBe("undefined");
-        outgoing.setup(null, port, username, password);
-
         const email = {
           envelope: {
             to: ["receiver@test.com"],

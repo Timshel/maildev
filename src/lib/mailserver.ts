@@ -1,14 +1,16 @@
 "use strict";
 
 /**
- * MailDev - mailserver.js
+ * MailDev - mailserver
  */
 import type { Attachment, Envelope, Mail, ParsedMail } from "./type";
+import type { OutgoingOptions } from "./outgoing";
 import type { ReadStream } from "fs";
 
 import { calculateBcc } from "./helpers/bcc";
 import { createOnAuthCallback } from "./helpers/smtp";
 import { parse as mailParser } from "./mailparser";
+import { Outgoing } from "./outgoing";
 import { SMTPServer } from "smtp-server";
 import { promises as pfs } from "fs";
 
@@ -19,23 +21,25 @@ const os = require("os");
 const path = require("path");
 const utils = require("./utils");
 const logger = require("./logger");
-const outgoing = require("./outgoing");
 const createDOMPurify = require("dompurify");
 const { JSDOM } = require("jsdom");
 
 const defaultPort = 1025;
 const defaultHost = "0.0.0.0";
 
-const HIDEABLE_EXTENSIONS = [
-  "STARTTLS", // Keep it for backward compatibility, but is overriden by hardcoded `hideSTARTTLS`
-  "PIPELINING",
-  "8BITMIME",
-  "SMTPUTF8",
-];
-
-/**
- * Mail Server exports
- */
+export interface MailServerOptions {
+  port?: number;
+  host?: string;
+  mailDir?: string;
+  hideExtensions?: string[];
+  isSecure?: boolean;
+  auth?: { user: string; pass: string };
+  ssl?: { certPath: string; keyPath: string };
+  hide8BITMIME?: boolean;
+  hidePIPELINING?: boolean;
+  hideSMTPUTF8?: boolean;
+  outgoing?: OutgoingOptions;
+}
 
 export class MailServer {
   port: number;
@@ -46,6 +50,7 @@ export class MailServer {
   eventEmitter = new events.EventEmitter();
 
   smtp: typeof SMTPServer;
+  outgoing: Outgoing | undefined;
 
   /**
    * Extend Event Emitter methods
@@ -61,113 +66,115 @@ export class MailServer {
   removeListener = this.eventEmitter.removeListener.bind(this.eventEmitter);
   removeAllListeners = this.eventEmitter.removeAllListeners.bind(this.eventEmitter);
 
-  constructor(
-    port: number,
-    host: string,
-    mailDir: string | undefined = undefined,
-    user: string | undefined = undefined,
-    password: string | undefined = undefined,
-    hideExtensions: [] = [],
-    isSecure: boolean = false,
-    certFilePath: string | undefined,
-    keyFilePath: string | undefined,
-  ) {
+  constructor(options?: MailServerOptions, eventNameMapper?: (Mail) => string | undefined) {
     const defaultMailDir = path.join(os.tmpdir(), `maildev-${process.pid.toString()}`);
-    const hideExtensionOptions = getHideExtensionOptions(hideExtensions);
-    const smtpServerConfig = Object.assign(
-      {
-        secure: isSecure,
-        cert: certFilePath ? fs.readFileSync(certFilePath) : null,
-        key: keyFilePath ? fs.readFileSync(keyFilePath) : null,
-        onAuth: createOnAuthCallback(user, password),
-        onData: (stream, session, callback) => handleDataStream(this, stream, session, callback),
-        logger: false,
-        hideSTARTTLS: true,
-        disabledCommands: user && password ? (isSecure ? [] : ["STARTTLS"]) : ["AUTH"],
-      },
-      hideExtensionOptions,
-    );
+    const secure = options?.isSecure ?? false;
+    const smtpServerConfig = {
+      secure,
+      cert: options?.ssl ? fs.readFileSync(options?.ssl?.certPath) : null,
+      key: options?.ssl ? fs.readFileSync(options?.ssl?.keyPath) : null,
+      onAuth: createOnAuthCallback(options?.auth?.user, options?.auth?.pass),
+      onData: (stream, session, callback) => handleDataStream(this, stream, session, callback),
+      logger: false,
+      hideSTARTTLS: true,
+      hidePIPELINING: options?.hidePIPELINING ?? false,
+      hide8BITMIME: options?.hide8BITMIME ?? false,
+      hideSMTPUTF8: options?.hideSMTPUTF8 ?? false,
+      disabledCommands: options?.auth ? (secure ? [] : ["STARTTLS"]) : ["AUTH"],
+    };
 
-    this.port = port;
-    this.host = host;
-    this.mailDir = mailDir || defaultMailDir;
+    this.port = options?.port ?? defaultPort;
+    this.host = options?.host ?? defaultHost;
+    this.mailDir = options?.mailDir ?? defaultMailDir;
 
     this.smtp = new SMTPServer(smtpServerConfig);
     this.smtp.on("error", onSmtpError);
 
     createMailDir(this.mailDir);
+
+    if (options?.outgoing) {
+      this.outgoing = new Outgoing(options?.outgoing);
+    }
+
+    if (options?.mailDir) {
+      loadMailsFromDirectory(this);
+    }
   }
 
   /**
    * Start the mailServer
    */
-  listen(callback) {
+  listen(): Promise<void> {
     const self = this;
-    if (typeof callback !== "function") callback = null;
-
-    // Listen on the specified port
-    this.smtp.listen(this.port, this.host, function (err) {
-      if (err) {
-        if (callback) {
-          callback(err);
-        } else {
-          throw err;
+    return new Promise((resolve, reject) => {
+      self.smtp.listen(self.port, self.host, (err) => {
+        if (err) {
+          reject(err);
         }
-      }
-      if (callback) callback();
 
-      logger.info("MailDev SMTP Server running at %s:%s", self.host, self.port);
+        logger.info("MailDev SMTP Server running at %s:%s", self.host, self.port);
+        resolve();
+      });
     });
   }
 
   /**
    * Stop the mailserver
    */
-  close(callback) {
+  close(): Promise<void> {
     this.emit("close");
-    this.smtp.close(callback);
-    outgoing.close();
-  }
+    this.outgoing?.close();
 
-  /**
-   * Setup outgoing
-   */
-  setupOutgoing(host, port, user, pass, secure) {
-    outgoing.setup(host, port, user, pass, secure);
+    return new Promise((resolve) => {
+      this.smtp.close(resolve);
+    });
   }
 
   isOutgoingEnabled(): boolean {
-    return outgoing.isEnabled();
+    return this.outgoing !== undefined;
   }
 
-  getOutgoingHost(): string {
-    return outgoing.getOutgoingHost();
+  getOutgoingHost(): string | undefined {
+    return this.outgoing?.getOutgoingHost();
   }
 
   /**
    * Set Auto Relay Mode, automatic send email to recipient
    */
-  setAutoRelayMode(enabled: boolean, rules: Object, emailAddress: string) {
-    outgoing.setAutoRelayMode(enabled, rules, emailAddress);
+  setAutoRelayMode(
+    enabled: boolean,
+    emailAddress: string | undefined,
+    rules: { allow?: string; deny?: string }[] | string | undefined,
+  ) {
+    if (this.outgoing) {
+      this.outgoing.setAutoRelayMode(enabled, emailAddress, rules);
+    } else {
+      throw new Error("Outgoing not configured");
+    }
   }
 
   relayMail(mail: Mail, isAutoRelay: boolean = true): Promise<void> {
-    return new Promise((resolve, reject) => {
-      this.getRawEmail(mail.id)
-        .then((rawEmailStream) => {
-          outgoing.relayMail(mail, rawEmailStream, isAutoRelay, (err) => {
-            if (err) {
+    const self = this;
+    const outgoing = this.outgoing;
+    return outgoing
+      ? new Promise((resolve, reject) => {
+          self
+            .getRawEmail(mail.id)
+            .then((rawEmailStream) => {
+              outgoing.relayMail(mail, rawEmailStream, isAutoRelay, (err) => {
+                if (err) {
+                  reject(err);
+                } else {
+                  resolve();
+                }
+              });
+            })
+            .catch((err) => {
+              logger.error("Mail Stream Error: ", err);
               reject(err);
-            } else {
-              resolve();
-            }
-          });
+            });
         })
-        .catch((err) => {
-          logger.error("Mail Stream Error: ", err);
-          reject(err);
-        });
-    });
+      : Promise.reject(new Error("Outgoing not configured"));
   }
 
   /**
@@ -330,31 +337,6 @@ export class MailServer {
     const stream = await this.getRawEmail(id);
     return ["message/rfc822", filename, stream];
   }
-
-  async loadMailsFromDirectory(): Promise<void[]> {
-    const self = this;
-    const persistencePath = await pfs.realpath(this.mailDir);
-    const files = await pfs.readdir(persistencePath).catch((err) => {
-      logger.error(`Error during reading of the mailDir ${persistencePath}`);
-      throw new Error(`Error during reading of the mailDir ${persistencePath}`);
-    });
-
-    self.store.length = 0;
-    const saved = files.map(async function (file) {
-      const envelope = {
-        id: path.parse(file).name,
-        from: [],
-        to: [],
-        host: undefined,
-        remoteAddress: undefined,
-        isRead: false,
-      };
-      const email = await getDiskEmail(self.mailDir, envelope);
-      return saveEmailToStore(self, email);
-    });
-
-    return Promise.all(saved);
-  }
 }
 
 /**
@@ -372,25 +354,33 @@ function onSmtpError(err) {
 /**
  * Create mail directory
  */
-
 function createMailDir(mailDir: string) {
   fs.mkdirSync(mailDir, { recursive: true });
   logger.info("MailDev using directory %s", mailDir);
 }
 
-function getHideExtensionOptions(extensions) {
-  if (!extensions) {
-    return {};
-  }
-  return extensions.reduce(function (options, extension) {
-    const ext = extension.toUpperCase();
-    if (HIDEABLE_EXTENSIONS.indexOf(ext) > -1) {
-      options[`hide${ext}`] = true;
-    } else {
-      throw new Error(`Invalid hideable extension: ${ext}`);
-    }
-    return options;
-  }, {});
+async function loadMailsFromDirectory(mailServer: MailServer): Promise<void[]> {
+  const persistencePath = await pfs.realpath(mailServer.mailDir);
+  const files = await pfs.readdir(persistencePath).catch((err) => {
+    logger.error(`Error during reading of the mailDir ${persistencePath}`);
+    throw new Error(`Error during reading of the mailDir ${persistencePath}`);
+  });
+
+  mailServer.store.length = 0;
+  const saved = files.map(async function (file) {
+    const envelope = {
+      id: path.parse(file).name,
+      from: [],
+      to: [],
+      host: undefined,
+      remoteAddress: undefined,
+      isRead: false,
+    };
+    const email = await getDiskEmail(mailServer.mailDir, envelope);
+    return saveEmailToStore(mailServer, email);
+  });
+
+  return Promise.all(saved);
 }
 
 async function saveAttachment(mailServer: MailServer, id, attachment): Promise<void> {
@@ -445,7 +435,7 @@ async function saveEmailToStore(mailServer: MailServer, mail: Mail): Promise<voi
   mailServer.store.push(mail.envelope);
   mailServer.eventEmitter.emit("new", mail);
 
-  if (outgoing.isAutoRelayEnabled()) {
+  if (mailServer?.outgoing?.isAutoRelayEnabled()) {
     await mailServer.relayMail(mail).catch((err) => {
       logger.error("Error when relaying email", err);
     });

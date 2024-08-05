@@ -12,7 +12,7 @@ const path = require("path");
 const nodemailer = require("nodemailer");
 const express = require("express");
 const proxyMiddleware = require("http-proxy-middleware").createProxyMiddleware;
-const MailDev = require("../dist/index.js");
+const MailDev = require("../dist/index").MailDev;
 
 const smtpPort = 9080;
 const webPort = 9081;
@@ -27,12 +27,6 @@ const createTransporter = async () => {
   });
 };
 
-function waitMailDevShutdown(maildev) {
-  return new Promise((resolve) => {
-    maildev.close(() => resolve());
-  });
-}
-
 describe("middleware", function () {
   let server;
   let maildev;
@@ -44,9 +38,11 @@ describe("middleware", function () {
 
     maildev = new MailDev({
       silent: true,
-      basePathname: "/maildev",
-      smtp: smtpPort,
-      web: webPort,
+      port: smtpPort,
+      web: {
+        port: webPort,
+        basePathname: "/maildev",
+      },
     });
 
     // proxy all maildev requests to the maildev app
@@ -60,12 +56,12 @@ describe("middleware", function () {
     app.use(proxy);
 
     server = app.listen(proxyPort, function (_) {
-      maildev.listen(done);
+      maildev.listen().then(() => done());
     });
   });
 
   after(async () => {
-    await waitMailDevShutdown(maildev);
+    await maildev.close();
     return new Promise((resolve) => {
       maildev.removeAllListeners();
       server.close();

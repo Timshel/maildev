@@ -7,8 +7,8 @@
 
 const assert = require("assert");
 const nodemailer = require("nodemailer");
-const MailDev = require("../dist/index.js");
-const delay = require("../src/lib/utils").delay;
+const MailDev = require("../dist/index").MailDev;
+const delay = require("../dist/lib/utils").delay;
 
 // email opts for nodemailer
 const emailOpts = {
@@ -29,27 +29,23 @@ const createTransporter = async () => {
   });
 };
 
-function waitMailDevShutdown(maildev) {
-  return new Promise((resolve) => {
-    maildev.close(() => resolve());
-  });
-}
-
 describe("API", () => {
   describe("Constructor", () => {
     it("should accept arguments", (done) => {
       const maildev = new MailDev({
-        smtp: port,
-        web: 9000,
-        outgoingHost: "smtp.gmail.com",
+        port: port,
         silent: true,
-        disableWeb: true,
+        outgoing: {
+          autoRelayAddress: "test@gmail.com",
+          host: "smtp.gmail.com",
+        },
+        web: { disabled: true },
       });
 
       assert.strictEqual(maildev.port, port);
       assert.strictEqual(maildev.getOutgoingHost(), "smtp.gmail.com");
 
-      maildev.close(done);
+      done();
     });
 
     it("should return mailserver object", function (done) {
@@ -61,22 +57,26 @@ describe("API", () => {
       assert.strictEqual(typeof maildev.getEmail, "function");
       assert.strictEqual(typeof maildev.relayMail, "function");
 
-      maildev.close(done);
+      done();
     });
   });
 
   describe("listen/close", () => {
     const maildev = new MailDev({
       silent: true,
-      disableWeb: true,
+      web: { disabled: true },
     });
 
     it("should start the mailserver", (done) => {
-      maildev.listen(done);
+      maildev.listen().then(() => {
+        done();
+      });
     });
 
     it("should stop the mailserver", (done) => {
-      maildev.close(done);
+      maildev.close().finally(() => {
+        done();
+      });
     });
   });
 
@@ -84,8 +84,8 @@ describe("API", () => {
     it("should receive emails", async () => {
       const maildev = new MailDev({
         silent: true,
-        disableWeb: true,
-        smtp: port,
+        port: port,
+        web: { disabled: true },
       });
       maildev.listen();
 
@@ -99,11 +99,11 @@ describe("API", () => {
 
       await delay(100);
 
-      return maildev.getAllEmail().then((emails) => {
+      return maildev.getAllEmail().then(async (emails) => {
         assert.strictEqual(Array.isArray(emails), true);
         assert.strictEqual(emails.length, 1);
         assert.strictEqual(emails[0].text, emailOpts.text);
-        waitMailDevShutdown(maildev);
+        await maildev.close();
         return transporter.close();
       });
     });
@@ -111,8 +111,8 @@ describe("API", () => {
     it("should emit events when receiving emails", async () => {
       const maildev = new MailDev({
         silent: true,
-        disableWeb: true,
-        smtp: port,
+        port: port,
+        web: { disabled: true },
       });
       const transporter = await createTransporter();
       maildev.listen();
@@ -121,8 +121,8 @@ describe("API", () => {
       return new Promise((resolve) => {
         maildev.on("new", async (email) => {
           assert.strictEqual(email.text, emailOpts.text);
-          await waitMailDevShutdown(maildev);
           maildev.removeAllListeners();
+          await maildev.close();
           await transporter.close();
           resolve();
         });

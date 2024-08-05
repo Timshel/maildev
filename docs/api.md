@@ -116,7 +116,7 @@ maildev.on('new', function (email) {
 **relayMail(id): Promise<void>** - If configured, this will relay/send the given
 email to it's "to" address. Also accepts an email object instead of id.
 
-**setAutoRelayMode(enabled, rules)** - If relay configured, this will auto relay/send emails received
+**setAutoRelayMode(enabled, email, rules)** - If relay configured, this will auto relay/send emails received
 to it's "to" address. The rules allows to filters the emails to send.
 
 ### Event methods
