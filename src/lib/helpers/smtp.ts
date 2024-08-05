@@ -1,11 +1,9 @@
 "use strict";
 
-const smtpHelpers = (module.exports = {});
-
 /**
  * Authorize callback for smtp server
  */
-smtpHelpers.createOnAuthCallback = function (username, password) {
+export function createOnAuthCallback(username: string | undefined, password: string | undefined) {
   return function onAuth(auth, session, callback) {
     if (auth.username && auth.password) {
       if (auth.username !== username || auth.password !== password) {
@@ -14,4 +12,4 @@ smtpHelpers.createOnAuthCallback = function (username, password) {
     }
     callback(null, { user: username });
   };
-};
+}

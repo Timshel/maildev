@@ -6,6 +6,7 @@
 import type { Attachment, Envelope, Mail, ParsedMail } from "./type";
 import type { ReadStream } from "fs";
 
+import { createOnAuthCallback } from "./helpers/smtp";
 import { parse as mailParser } from "./mailparser";
 import { SMTPServer } from "smtp-server";
 import { promises as pfs } from "fs";
@@ -17,7 +18,6 @@ const os = require("os");
 const path = require("path");
 const utils = require("./utils");
 const logger = require("./logger");
-const smtpHelpers = require("./helpers/smtp");
 const { calculateBcc } = require("./helpers/bcc");
 const outgoing = require("./outgoing");
 const createDOMPurify = require("dompurify");
@@ -79,7 +79,7 @@ export class MailServer {
         secure: isSecure,
         cert: certFilePath ? fs.readFileSync(certFilePath) : null,
         key: keyFilePath ? fs.readFileSync(keyFilePath) : null,
-        onAuth: smtpHelpers.createOnAuthCallback(user, password),
+        onAuth: createOnAuthCallback(user, password),
         onData: (stream, session, callback) => handleDataStream(this, stream, session, callback),
         logger: false,
         hideSTARTTLS: true,

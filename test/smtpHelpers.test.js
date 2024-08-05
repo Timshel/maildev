@@ -1,7 +1,7 @@
 /* global describe, it */
 "use strict";
 const expect = require("expect").expect;
-const smptHelpers = require("../src/lib/helpers/smtp");
+const smptHelpers = require("../dist/lib/helpers/smtp");
 
 describe("smtpHelpers", () => {
   describe("createOnAuthCallback", () => {

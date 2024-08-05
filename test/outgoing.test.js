@@ -4,7 +4,7 @@ const jest = require("jest-mock");
 const expect = require("expect").expect;
 const SMTPServer = require("smtp-server").SMTPServer;
 const outgoing = require("../src/lib/outgoing");
-const smptHelpers = require("../src/lib/helpers/smtp");
+const smptHelpers = require("../dist/lib/helpers/smtp");
 
 let lastPort = 8025;
 const getPort = () => lastPort++;
