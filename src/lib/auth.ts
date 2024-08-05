@@ -4,7 +4,7 @@
  * MailDev - auth.js
  */
 
-export default function (user: string, password: string) {
+export function auth(user: string, password: string) {
   return function (req, res, next) {
     // allow health checks without auth
     if (req.path === "/healthz") {
