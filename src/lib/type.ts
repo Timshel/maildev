@@ -27,7 +27,7 @@ export interface StructuredHeader extends MailParser.StructuredHeader {
 /**
  * Possible types of a header value.
  */
-export type HeaderValue = string[] | AddressObject | Date | StructuredHeader;
+export type HeaderValue = string[];
 
 /**
  * A Map object with lowercase header keys.
@@ -59,27 +59,32 @@ export interface EmailAddress {
   /**
    * The email address.
    */
-  address?: string | undefined;
+  address: string;
   /**
    * The name part of the email/group.
    */
   name: string;
-  /**
-   * An array of grouped addresses.
-   */
-  group?: EmailAddress[] | undefined;
 }
 
 /**
  * A Map object with lowercase header keys.
  */
 export type Headers = {
+  date: Date | undefined;
+
+  contentType: StructuredHeader | undefined;
+  contentDisposition: StructuredHeader | undefined;
+  dkimSignature: StructuredHeader[];
+
   from: AddressObject | undefined;
   to: AddressObject | undefined;
   cc: AddressObject | undefined;
   bcc: AddressObject | undefined;
-  date: Date | undefined;
+  sender: AddressObject | undefined;
   replyTo: AddressObject | undefined;
+  deliveredTo: AddressObject | undefined;
+  dispositionNotificationTo: AddressObject | undefined;
+
   received: string[];
   priority: string | undefined;
   headers: HeadersMap;
@@ -223,8 +228,8 @@ export interface ParsedMail {
 
 export interface Envelope {
   id: string;
-  from: string | undefined;
-  to: string | undefined;
+  from: EmailAddress[];
+  to: EmailAddress[];
   host: string | undefined;
   remoteAddress: string | undefined;
   isRead: boolean;
@@ -232,7 +237,7 @@ export interface Envelope {
 
 export interface Mail extends ParsedMail {
   id: string;
-  calculatedBcc: string[];
+  calculatedBcc: EmailAddress[];
   size: number;
   sizeHuman: string;
   envelope: Envelope;

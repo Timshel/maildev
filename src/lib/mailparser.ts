@@ -1,5 +1,12 @@
 import type * as MailParser from "mailparser";
-import type { AddressObject, Headers, HeaderValue, ParsedMail } from "./type";
+import type {
+  AddressObject,
+  EmailAddress,
+  Headers,
+  HeaderValue,
+  ParsedMail,
+  StructuredHeader,
+} from "./type";
 
 const crypto = require("crypto");
 const mime = require("mime");
@@ -10,17 +17,28 @@ const logger = require("./logger");
 export async function parse(input): Promise<ParsedMail> {
   return simpleParser(input, {}).then((parsed: MailParser.ParsedMail) => {
     const headers: Headers = {
+      date: getDate(parsed.headers, "date"),
+
+      contentType: single(getSructured(parsed.headers, "content-type")),
+      contentDisposition: single(getSructured(parsed.headers, "content-disposition")),
+      dkimSignature: getSructured(parsed.headers, "dkim-signature"),
+
       from: getAddress(parsed.headers, "from"),
       to: getAddress(parsed.headers, "to"),
       cc: getAddress(parsed.headers, "cc"),
       bcc: getAddress(parsed.headers, "bcc"),
-      date: getDate(parsed.headers, "date"),
+      sender: getAddress(parsed.headers, "sender"),
       replyTo: getAddress(parsed.headers, "reply-to"),
-      received: getSringArray(parsed.headers, "received"),
+      deliveredTo: getAddress(parsed.headers, "delivered-to"),
+      dispositionNotificationTo: getAddress(parsed.headers, "disposition-notification-to"),
+
       priority: getSring(parsed.headers, "priority"),
+
+      received: getSringArray(parsed.headers, "received"),
       headers: new Map(
         Array.from(parsed.headers, ([key, value]) => {
-          return [key, typeof value === "string" ? [value] : value];
+          const cast = value as string | string[];
+          return [key, typeof cast === "string" ? [cast] : cast];
         }),
       ),
     };
@@ -76,6 +94,10 @@ export async function parse(input): Promise<ParsedMail> {
   });
 }
 
+function single<T>(array: T[]): T | undefined {
+  return array.length > 0 ? array[0] : undefined;
+}
+
 function getDate(headers: MailParser.Headers, key: string): Date | undefined {
   const value = headers.get(key);
   headers.delete(key);
@@ -115,9 +137,46 @@ function getSringArray(headers: MailParser.Headers, key: string): string[] {
 }
 
 function getAddress(headers: MailParser.Headers, key: string): AddressObject | undefined {
-  const headerValue = headers.get(key);
+  const headerValue = headers.get(key) as MailParser.AddressObject | undefined;
   headers.delete(key);
-  return headerValue as AddressObject | undefined;
+
+  function flatten(acc: EmailAddress[], addr: MailParser.EmailAddress): EmailAddress[] {
+    if (addr.group) {
+      addr.group.forEach((e) => flatten(acc, e));
+    }
+
+    if (addr.address) {
+      acc.push({ address: addr.address, name: addr.name });
+    }
+
+    return acc;
+  }
+
+  return headerValue
+    ? {
+        value: headerValue.value.reduce(flatten, []) ?? [],
+        html: headerValue.html,
+        text: headerValue.text,
+      }
+    : undefined;
+}
+
+function getSructured(headers: MailParser.Headers, key: string): StructuredHeader[] {
+  const value = headers.get(key) as MailParser.StructuredHeader | string | string[] | undefined;
+  headers.delete(key);
+
+  if (typeof value === "string") {
+    return [{ value, params: {} }];
+  } else if (Array.isArray(value)) {
+    return value.map((n) => {
+      return { value: n, params: {} };
+    });
+  } else if (typeof value === "object") {
+    return [value];
+  } else if (value) {
+    logger.error("Invalid header value for %s, expected StructuredHeader or [] got %s", key, value);
+  }
+  return [];
 }
 
 /**

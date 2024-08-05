@@ -6,6 +6,7 @@
 import type { Attachment, Envelope, Mail, ParsedMail } from "./type";
 import type { ReadStream } from "fs";
 
+import { calculateBcc } from "./helpers/bcc";
 import { createOnAuthCallback } from "./helpers/smtp";
 import { parse as mailParser } from "./mailparser";
 import { SMTPServer } from "smtp-server";
@@ -18,7 +19,6 @@ const os = require("os");
 const path = require("path");
 const utils = require("./utils");
 const logger = require("./logger");
-const { calculateBcc } = require("./helpers/bcc");
 const outgoing = require("./outgoing");
 const createDOMPurify = require("dompurify");
 const { JSDOM } = require("jsdom");
@@ -343,8 +343,8 @@ export class MailServer {
     const saved = files.map(async function (file) {
       const envelope = {
         id: path.parse(file).name,
-        from: undefined,
-        to: undefined,
+        from: [],
+        to: [],
         host: undefined,
         remoteAddress: undefined,
         isRead: false,
@@ -419,17 +419,10 @@ async function buildMail(
   const emlPath = path.join(mailDir, envelope.id + ".eml");
   const stat = await pfs.stat(emlPath);
 
-  const onlyAddress = (xs) => (xs || []).map((x) => x.address);
-  const calculatedBcc = calculateBcc(
-    onlyAddress(envelope.to),
-    onlyAddress(parsedMail.to),
-    onlyAddress(parsedMail.cc),
-  );
-
   return {
     id: envelope.id,
     envelope,
-    calculatedBcc,
+    calculatedBcc: calculateBcc(envelope.to, parsedMail.to, parsedMail.cc),
     size: stat.size,
     sizeHuman: utils.formatBytes(stat.size),
     ...parsedMail,
