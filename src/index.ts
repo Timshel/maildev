@@ -27,7 +27,7 @@ interface MailDevWebOptions extends WebOptions {
 export class MailDev extends MailServer {
   web: Web | undefined;
 
-  constructor(config?: MailDevOptions, mailEventNameMapper?: (Mail) => string | undefined) {
+  constructor(config?: MailDevOptions, mailEventSubjectMapper?: (Mail) => string | undefined) {
     if (config?.verbose) {
       logger.setLevel(2);
     } else if (config?.silent) {
@@ -35,7 +35,7 @@ export class MailDev extends MailServer {
     }
 
     // Start the Mailserver
-    super(config, mailEventNameMapper);
+    super(config, mailEventSubjectMapper);
 
     // Start the web server
     if (!config?.web?.disabled) {

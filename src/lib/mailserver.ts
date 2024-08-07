@@ -27,6 +27,8 @@ const { JSDOM } = require("jsdom");
 const defaultPort = 1025;
 const defaultHost = "0.0.0.0";
 
+const reservedEventName = ["close", "delete"];
+
 export interface MailServerOptions {
   port?: number;
   host?: string;
@@ -48,6 +50,7 @@ export class MailServer {
   mailDir: string;
   store: Envelope[] = [];
   eventEmitter = new events.EventEmitter();
+  mailEventSubjectMapper: (Mail) => string | undefined;
 
   smtp: typeof SMTPServer;
   outgoing: Outgoing | undefined;
@@ -66,7 +69,68 @@ export class MailServer {
   removeListener = this.eventEmitter.removeListener.bind(this.eventEmitter);
   removeAllListeners = this.eventEmitter.removeAllListeners.bind(this.eventEmitter);
 
-  constructor(options?: MailServerOptions, eventNameMapper?: (Mail) => string | undefined) {
+  next(subject: string): Promise<Mail> {
+    if (reservedEventName.includes(subject)) {
+      throw new Error(
+        `Invalid subject ${subject}; ${reservedEventName} are reserved for internal usage`,
+      );
+    }
+
+    return new Promise((resolve) => {
+      this.once(subject, resolve);
+    });
+  }
+
+  /**
+   * Use an internal array to store received email even if not consummed
+   * Use `.return()` to close it
+   **/
+  async *generator(subject: string): AsyncIterator<Mail> {
+    if (reservedEventName.includes(subject)) {
+      throw new Error(
+        `Invalid subject ${subject}; ${reservedEventName} are reserved for internal usage`,
+      );
+    }
+
+    let closed: boolean = false;
+    const next: Promise<Mail>[] = [];
+    const self = this;
+
+    const closing = () => {
+      closed = true;
+    };
+
+    let nextCallback;
+    function buildNext(): Promise<Mail> {
+      return new Promise((resolve) => {
+        nextCallback = (mail) => {
+          next.push(buildNext());
+          resolve(mail);
+        };
+        self.once(subject, nextCallback);
+      });
+    }
+
+    this.once("close", closing);
+    next.push(buildNext());
+
+    try {
+      do {
+        const email = (await next.shift()) as Mail;
+        yield email;
+      } while (!closed);
+    } finally {
+      this.removeListener("close", closing);
+      if (nextCallback) {
+        this.removeListener(subject, nextCallback);
+      }
+    }
+  }
+
+  constructor(
+    options?: MailServerOptions,
+    mailEventSubjectMapper: (Mail) => string | undefined = (m) => m.to[0]?.address,
+  ) {
     const defaultMailDir = path.join(os.tmpdir(), `maildev-${process.pid.toString()}`);
     const secure = options?.isSecure ?? false;
     const smtpServerConfig = {
@@ -86,6 +150,7 @@ export class MailServer {
     this.port = options?.port ?? defaultPort;
     this.host = options?.host ?? defaultHost;
     this.mailDir = options?.mailDir ?? defaultMailDir;
+    this.mailEventSubjectMapper = mailEventSubjectMapper;
 
     this.smtp = new SMTPServer(smtpServerConfig);
     this.smtp.on("error", onSmtpError);
@@ -435,6 +500,17 @@ async function saveEmailToStore(mailServer: MailServer, mail: Mail): Promise<voi
 
   mailServer.store.push(mail.envelope);
   mailServer.eventEmitter.emit("new", mail);
+
+  const subject = mailServer?.mailEventSubjectMapper(mail);
+  if (subject) {
+    if (reservedEventName.includes(subject)) {
+      logger.error(
+        `Invalid subject ${subject}; ${reservedEventName} are reserved for internal usage`,
+      );
+    } else {
+      mailServer.eventEmitter.emit(subject, mail);
+    }
+  }
 
   if (mailServer?.outgoing?.isAutoRelayEnabled()) {
     await mailServer.relayMail(mail).catch((err) => {

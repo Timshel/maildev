@@ -8,22 +8,33 @@
 const assert = require("assert");
 const SMTPConnection = require("nodemailer/lib/smtp-connection");
 const MailServer = require("../dist/lib/mailserver").MailServer;
+const nodemailer = require("nodemailer");
 const port = 9025;
 
-describe("mailserver", () => {
-  let maildev;
+async function createTransporter(port, auth) {
+  return nodemailer.createTransport({
+    port: port,
+    auth,
+  });
+}
 
-  before(function (done) {
-    maildev = new MailServer({
+describe("mailserver", () => {
+  let mailServer;
+  let transporter;
+
+  before(async () => {
+    mailServer = new MailServer({
       port: port,
       auth: { user: "bodhi", pass: "surfing" },
     });
-    maildev.listen().then(() => done());
+    await mailServer.listen();
+
+    transporter = await createTransporter(port, { type: "login", user: "bodhi", pass: "surfing" });
+    return transporter.verify();
   });
 
   after((done) => {
-    maildev.close().finally(() => {
-      maildev.removeAllListeners();
+    mailServer.close().finally(() => {
       done();
     });
   });
@@ -54,8 +65,8 @@ describe("mailserver", () => {
   describe("smtp authentication", () => {
     it("should require authentication", function (done) {
       const connection = new SMTPConnection({
-        port: maildev.port,
-        host: maildev.host,
+        port: mailServer.port,
+        host: mailServer.host,
         tls: {
           rejectUnauthorized: false,
         },
@@ -82,8 +93,8 @@ describe("mailserver", () => {
 
     it("should authenticate", function (done) {
       const connection = new SMTPConnection({
-        port: maildev.port,
-        host: maildev.host,
+        port: mailServer.port,
+        host: mailServer.host,
         tls: {
           rejectUnauthorized: false,
         },
@@ -117,6 +128,128 @@ describe("mailserver", () => {
           },
         );
       });
+    });
+  });
+
+  describe("Handle email", () => {
+    const emailOpts = {
+      from: "johnny.utah@fbi.gov",
+      to: "bodhi@gmail.com",
+      subject: "Test",
+      html: "Test",
+    };
+
+    it("should emit received email", async () => {
+      const mail = await new Promise((resolve) => {
+        mailServer.once("new", function (mail) {
+          resolve(mail);
+        });
+        transporter.sendMail(emailOpts);
+      });
+      assert.strictEqual(mail.from[0]?.address, emailOpts.from);
+      assert.strictEqual(mail.to[0]?.address, emailOpts.to);
+      assert.strictEqual(mail.subject, emailOpts.subject);
+    });
+
+    it("should emit email with customs subject", async () => {
+      const mail = await new Promise((resolve) => {
+        mailServer.once(emailOpts.to, function (mail) {
+          resolve(mail);
+        });
+        transporter.sendMail(emailOpts);
+      });
+      assert.strictEqual(mail.from[0]?.address, emailOpts.from);
+      assert.strictEqual(mail.to[0]?.address, emailOpts.to);
+      assert.strictEqual(mail.subject, emailOpts.subject);
+    });
+
+    it("next should work", async () => {
+      const p = mailServer.next(emailOpts.to);
+      transporter.sendMail(emailOpts);
+      const mail = await p;
+      assert.strictEqual(mail.from[0]?.address, emailOpts.from);
+      assert.strictEqual(mail.to[0]?.address, emailOpts.to);
+      assert.strictEqual(mail.subject, emailOpts.subject);
+    });
+
+    it("next should work", async () => {
+      const p = mailServer.next(emailOpts.to);
+
+      transporter.sendMail(emailOpts);
+
+      const mail = await p;
+      assert.strictEqual(mail.from[0]?.address, emailOpts.from);
+      assert.strictEqual(mail.to[0]?.address, emailOpts.to);
+      assert.strictEqual(mail.subject, emailOpts.subject);
+    });
+
+    it("next should fail with reserved subject", async () => {
+      try {
+        const p = mailServer.next("close");
+      } catch (e) {
+        assert.strictEqual(
+          e.message,
+          "Invalid subject close; close,delete are reserved for internal usage",
+        );
+      }
+    });
+
+    it("Generator should work", async () => {
+      const emails = mailServer.generator(emailOpts.to);
+
+      transporter.sendMail(emailOpts);
+
+      let { value: mail } = await emails.next();
+      assert.strictEqual(mail.subject, emailOpts.subject);
+
+      // Send two mail, we should only received one
+      transporter.sendMail({
+        ...emailOpts,
+        subject: "Not Dropped1",
+      });
+      await new Promise((r) => setTimeout(r, 100));
+      transporter.sendMail({
+        ...emailOpts,
+        subject: "Not Dropped2",
+      });
+      await new Promise((r) => setTimeout(r, 100));
+      transporter.sendMail({
+        ...emailOpts,
+        subject: "Not Dropped3",
+      });
+      await new Promise((r) => setTimeout(r, 100));
+      transporter.sendMail({
+        ...emailOpts,
+        subject: "Not Dropped4",
+      });
+
+      mail = (await emails.next()).value;
+      assert.strictEqual(mail.subject, "Not Dropped1");
+      mail = (await emails.next()).value;
+      assert.strictEqual(mail.subject, "Not Dropped2");
+      mail = (await emails.next()).value;
+      assert.strictEqual(mail.subject, "Not Dropped3");
+      mail = (await emails.next()).value;
+      assert.strictEqual(mail.subject, "Not Dropped4");
+
+      transporter.sendMail(emailOpts);
+      transporter.sendMail(emailOpts);
+      transporter.sendMail(emailOpts);
+
+      await new Promise((r) => setTimeout(r, 100));
+
+      emails.return();
+    });
+
+    it("Generator should fail with reserved subject", async () => {
+      try {
+        const p = mailServer.generator("close");
+      } catch (e) {
+        assert.strictEqual(
+          e.message,
+          "Invalid subject close; close,delete are reserved for internal usage",
+        );
+      }
     });
   });
 });

@@ -38,6 +38,7 @@ function waitMailDevShutdown(maildev) {
 
 describe("email", () => {
   let maildev;
+  let transporter;
 
   before(function (done) {
     maildev = new MailDev(defaultMailDevOpts);

@@ -119,7 +119,20 @@ email to it's "to" address. Also accepts an email object instead of id.
 **setAutoRelayMode(enabled, email, rules)** - If relay configured, this will auto relay/send emails received
 to it's "to" address. The rules allows to filters the emails to send.
 
-### Event methods
+## Event Methods
+
+When receiving an email two events are emitted with the subject being `new` and the return value of the `mailEventSubjectMapper` parameter which by default select the first recipient.
+
+### Async
+
+The `close` and `delete` event subjects are reserved and cannot be used to wait for emails.
+
+**next(subject): Promise<Mail>** - Promised with the next received email with matching event subject.
+
+**generator(subject): AsyncIterator<Mail>** - Generator to iterate over received email with matching event subject.
+Use an internal array to store received email even when not consumming. Don't forget to use `.return()` to close it.
+
+### Callbacks
 
 **on('new', callback)** - Event called when a new email is received. Callback
 receives single mail object.
@@ -138,3 +151,4 @@ receives single mail object. Add the listener to the beginning of the listeners 
 **removeListener('new', callback)** - Remove the previously added event listener (at most once).
 
 **removeAllListeners('new')** - Removes all listeners, or those of the specified eventName.
+
