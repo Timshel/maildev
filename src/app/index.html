@@ -129,7 +129,7 @@
                             <li ng-repeat="item in items | orderBy:'time':!reverse | filter: search " class="email-item  email-{{item.id}} " ng-class="{current: item.id === currentItemId, read: item.read, unread: !item.read}">
                                 <a href="#/email/{{item.id}}" class="email-item-link">
                                     <span class="title">
-                                        {{item.subject}}<span ng-hide="!item.attachments">&nbsp;<i class="fas fa-paperclip" ></i></span>
+                                        {{item.subject}}<span ng-hide="!item.attachments.length">&nbsp;<i class="fas fa-paperclip" ></i></span>
                                         <span class="title-subline" title="{{item.to}}">
                                             To:&nbsp;{{item.to.0.address}}&nbsp;<span ng-if="item.to.length > 1">+{{item.to.length-1}}</span>
                                         </span>
