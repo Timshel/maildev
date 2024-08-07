@@ -139,12 +139,21 @@ describe("mailserver", () => {
       html: "Test",
     };
 
+    function sendMail(subject = emailOpts.subject) {
+      const mail = {
+        ...emailOpts,
+        subject,
+      };
+      transporter.sendMail(mail);
+      return subject;
+    }
+
     it("should emit received email", async () => {
       const mail = await new Promise((resolve) => {
         mailServer.once("new", function (mail) {
           resolve(mail);
         });
-        transporter.sendMail(emailOpts);
+        sendMail();
       });
       assert.strictEqual(mail.from[0]?.address, emailOpts.from);
       assert.strictEqual(mail.to[0]?.address, emailOpts.to);
@@ -156,7 +165,7 @@ describe("mailserver", () => {
         mailServer.once(emailOpts.to, function (mail) {
           resolve(mail);
         });
-        transporter.sendMail(emailOpts);
+        sendMail();
       });
       assert.strictEqual(mail.from[0]?.address, emailOpts.from);
       assert.strictEqual(mail.to[0]?.address, emailOpts.to);
@@ -164,23 +173,28 @@ describe("mailserver", () => {
     });
 
     it("next should work", async () => {
-      const p = mailServer.next(emailOpts.to);
+      let p = mailServer.next("new");
       transporter.sendMail(emailOpts);
-      const mail = await p;
-      assert.strictEqual(mail.from[0]?.address, emailOpts.from);
-      assert.strictEqual(mail.to[0]?.address, emailOpts.to);
+      let mail = await p;
+      assert.strictEqual(mail.subject, emailOpts.subject);
+
+      p = mailServer.next(emailOpts.to);
+      transporter.sendMail(emailOpts);
+      mail = await p;
       assert.strictEqual(mail.subject, emailOpts.subject);
     });
 
-    it("next should work", async () => {
-      const p = mailServer.next(emailOpts.to);
+    it("Multiple next should work", async () => {
+      let p1 = mailServer.next("new");
+      let p2 = mailServer.next("new");
 
-      transporter.sendMail(emailOpts);
+      const subject = sendMail("Multiple");
 
-      const mail = await p;
-      assert.strictEqual(mail.from[0]?.address, emailOpts.from);
-      assert.strictEqual(mail.to[0]?.address, emailOpts.to);
-      assert.strictEqual(mail.subject, emailOpts.subject);
+      let mail1 = await p1;
+      assert.strictEqual(mail1.subject, subject);
+
+      let mail2 = await p2;
+      assert.strictEqual(mail2.subject, subject);
     });
 
     it("next should fail with reserved subject", async () => {
@@ -195,7 +209,7 @@ describe("mailserver", () => {
     });
 
     it("Generator should work", async () => {
-      const emails = mailServer.generator(emailOpts.to);
+      const emails = mailServer.iterator(emailOpts.to, "1");
 
       transporter.sendMail(emailOpts);
 
@@ -203,53 +217,58 @@ describe("mailserver", () => {
       assert.strictEqual(mail.subject, emailOpts.subject);
 
       // Send two mail, we should only received one
-      transporter.sendMail({
-        ...emailOpts,
-        subject: "Not Dropped1",
-      });
+
+      const subject1 = sendMail("Not Dropped1");
       await new Promise((r) => setTimeout(r, 100));
-      transporter.sendMail({
-        ...emailOpts,
-        subject: "Not Dropped2",
-      });
+      const subject2 = sendMail("Not Dropped2");
       await new Promise((r) => setTimeout(r, 100));
-      transporter.sendMail({
-        ...emailOpts,
-        subject: "Not Dropped3",
-      });
+      const subject3 = sendMail("Not Dropped3");
       await new Promise((r) => setTimeout(r, 100));
-      transporter.sendMail({
-        ...emailOpts,
-        subject: "Not Dropped4",
-      });
+      const subject4 = sendMail("Not Dropped4");
 
       mail = (await emails.next()).value;
-      assert.strictEqual(mail.subject, "Not Dropped1");
+      assert.strictEqual(mail.subject, subject1);
       mail = (await emails.next()).value;
-      assert.strictEqual(mail.subject, "Not Dropped2");
+      assert.strictEqual(mail.subject, subject2);
       mail = (await emails.next()).value;
-      assert.strictEqual(mail.subject, "Not Dropped3");
+      assert.strictEqual(mail.subject, subject3);
       mail = (await emails.next()).value;
-      assert.strictEqual(mail.subject, "Not Dropped4");
-
-      transporter.sendMail(emailOpts);
-      transporter.sendMail(emailOpts);
-      transporter.sendMail(emailOpts);
-
-      await new Promise((r) => setTimeout(r, 100));
+      assert.strictEqual(mail.subject, subject4);
 
       emails.return();
     });
 
     it("Generator should fail with reserved subject", async () => {
       try {
-        const p = mailServer.generator("close");
+        const p = mailServer.iterator("close", "2");
       } catch (e) {
         assert.strictEqual(
           e.message,
           "Invalid subject close; close,delete are reserved for internal usage",
         );
       }
+    });
+
+    it("Multiple Generators should work", async () => {
+      const gen1 = await mailServer.iterator(emailOpts.to, "3");
+      const gen2 = await mailServer.iterator(emailOpts.to, "4");
+
+      const subject1 = sendMail("Mail1");
+
+      const { value: gen1mail1 } = await gen1.next();
+      assert.strictEqual(gen1mail1.subject, subject1);
+      const { value: gen2mail1 } = await gen2.next();
+      assert.strictEqual(gen2mail1.subject, subject1);
+
+      const subject2 = sendMail("Mail2");
+
+      const { value: gen1mail2 } = await gen1.next();
+      assert.strictEqual(gen1mail2.subject, subject2);
+      const { value: gen2mail2 } = await gen2.next();
+      assert.strictEqual(gen2mail2.subject, subject2);
+
+      gen1.return();
+      gen2.return();
     });
   });
 });

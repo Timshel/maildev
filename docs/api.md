@@ -129,7 +129,7 @@ The `close` and `delete` event subjects are reserved and cannot be used to wait 
 
 **next(subject): Promise<Mail>** - Promised with the next received email with matching event subject.
 
-**generator(subject): AsyncIterator<Mail>** - Generator to iterate over received email with matching event subject.
+**iterator(subject): AsyncIterator<Mail>** - Generator to iterate over received email with matching event subject.
 Use an internal array to store received email even when not consumming. Don't forget to use `.return()` to close it.
 
 ### Callbacks

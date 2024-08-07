@@ -85,7 +85,7 @@ export class MailServer {
    * Use an internal array to store received email even if not consummed
    * Use `.return()` to close it
    **/
-  async *generator(subject: string): AsyncIterator<Mail> {
+  iterator(subject: string): AsyncIterator<Mail> {
     if (reservedEventName.includes(subject)) {
       throw new Error(
         `Invalid subject ${subject}; ${reservedEventName} are reserved for internal usage`,
@@ -111,20 +111,25 @@ export class MailServer {
       });
     }
 
-    this.once("close", closing);
+    self.once("close", closing);
     next.push(buildNext());
 
-    try {
-      do {
-        const email = (await next.shift()) as Mail;
-        yield email;
-      } while (!closed);
-    } finally {
-      this.removeListener("close", closing);
-      if (nextCallback) {
-        this.removeListener(subject, nextCallback);
+    // We use an internal generator otherwise the setup phase was not always run
+    async function* inner(subject: string): AsyncIterator<Mail> {
+      try {
+        do {
+          const email = (await next.shift()) as Mail;
+          yield email;
+        } while (!closed);
+      } finally {
+        self.removeListener("close", closing);
+        if (nextCallback) {
+          self.removeListener(subject, nextCallback);
+        }
       }
     }
+
+    return inner(subject);
   }
 
   constructor(
