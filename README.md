@@ -1,15 +1,20 @@
 # MailDev
-
-[![npm](https://img.shields.io/npm/v/maildev)](https://www.npmjs.com/package/maildev)
-[![npm downloads](https://img.shields.io/npm/dm/maildev)](https://www.npmjs.com/package/maildev)
-[![Docker Pulls](https://img.shields.io/docker/pulls/maildev/maildev)](https://hub.docker.com/r/maildev/maildev)
+[![Docker Pulls](https://img.shields.io/docker/pulls/timshel/maildev)](https://hub.docker.com/r/timshel/maildev)
 [![License](https://img.shields.io/npm/l/maildev?color=white)](/LICENSE)
-[![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-black.svg)](https://standardjs.com)
+[![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-black.svg)](https://prettier.io/)
 
 
-> MailDev is sponsored by ⭐️ **[inngest/inngest](https://github.com/inngest/inngest)**.
+> This is a fork of ⭐️ **[maildev/maildev](https://github.com/maildev/maildev)**.
 >
-> [**Inngest** is the developer platform](https://www.inngest.com/?ref=maildev) for easily building reliable workflows with zero infrastructure. Check it out and give it a star! ⭐️
+> The goal of the fork is to:
+> - Update dependencies
+> - Swtich to TypeScript
+> - Add more event listeners method
+> - Add async support
+> - Add additionnal features
+>   - `mailEventSubjectMapper` allow to define custom event `subject` (by default use the first recipient)
+>
+> :warning: Due to extensive mofitications migrate with caution. :warning:
 
 **MailDev** is a simple way to test your project's generated email during development, with an easy to use web interface that runs on your machine built on top of [Node.js](http://www.nodejs.org).
 
@@ -18,11 +23,11 @@
 ## Docker Run
 
 If you want to use MailDev with [Docker](https://www.docker.com/), you can use the
-[**maildev/maildev** image on Docker Hub](https://hub.docker.com/r/maildev/maildev).
+[**maildev/maildev** image on Docker Hub](https://hub.docker.com/r/timshel/maildev).
 For a guide for usage with Docker,
-[checkout the docs](https://github.com/maildev/maildev/blob/master/docs/docker.md).
+[checkout the docs](https://github.com/timshel/maildev/blob/master/docs/docker.md).
 
-    $ docker run -p 1080:1080 -p 1025:1025 maildev/maildev
+    $ docker run -p 1080:1080 -p 1025:1025 timshel/maildev
 
 ## Usage
 
@@ -65,7 +70,7 @@ Usage: maildev [options]
 ## API
 
 MailDev can be used in your Node.js application. For more info view the
-[API docs](https://github.com/maildev/maildev/blob/master/docs/api.md).
+[API docs](https://github.com/timshel/maildev/blob/master/docs/api.md).
 
 ```javascript
 const MailDev = require("maildev");
@@ -77,10 +82,14 @@ maildev.listen();
 maildev.on("new", function (email) {
   // We got a new email!
 });
+
+// Or using Async
+const mail = await maildev.next("johnny@utah.com");
+
 ```
 
 MailDev also has a **REST API**. For more info
-[view the docs](https://github.com/maildev/maildev/blob/master/docs/rest.md).
+[view the docs](https://github.com/timshel/maildev/blob/master/docs/rest.md).
 
 ## Outgoing email
 
@@ -176,11 +185,11 @@ config.action_mailer.delivery_method = :smtp
 
 ## Ideas
 
-If you're using MailDev and you have a great idea, I'd love to hear it. If you're not using MailDev because it lacks a feature, I'd love to hear that too. Add an issue to the repo [here](https://github.com/maildev/maildev/issues/new).
+If you're using MailDev and you have a great idea, I'd love to hear it. If you're not using MailDev because it lacks a feature, I'd love to hear that too. Add an issue to the repo [here](https://github.com/timshel/maildev/issues/new).
 
 ## Contributing
 
-Any help on MailDev would be awesome. There is plenty of room for improvement. Feel free to [create a Pull Request](https://github.com/maildev/maildev/issues/new) from small to big changes.
+Any help on MailDev would be awesome. There is plenty of room for improvement. Feel free to [create a Pull Request](https://github.com/timshel/maildev/issues/new) from small to big changes.
 
 To run **MailDev** during development:
 
