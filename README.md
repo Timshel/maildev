@@ -20,6 +20,14 @@
 
 ![MailDev Screenshot](https://github.com/maildev/maildev/blob/gh-pages/images/screenshot-2021-01-03.png?raw=true)
 
+## Npm / Yarn
+
+It's not published on `npm` but due to [Github](https://docs.npmjs.com/cli/v10/configuring-npm/package-json#git-urls-as-dependencies) support you can use it with:
+
+```
+"maildev": "timshel/maildev#3.0.0-rc0"
+```
+
 ## Docker Run
 
 If you want to use MailDev with [Docker](https://www.docker.com/), you can use the
