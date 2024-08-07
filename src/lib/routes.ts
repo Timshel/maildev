@@ -1,7 +1,9 @@
 "use strict";
 
+import { MailServer } from "./mailserver";
+
 /**
- * MailDev - routes.js
+ * MailDev - routes
  */
 const express = require("express");
 const compression = require("compression");
@@ -11,7 +13,7 @@ const { filterEmails } = require("./utils");
 const emailRegexp =
   /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
-module.exports = function (app, mailserver, basePathname) {
+export function routes(app, mailserver: MailServer, basePathname: string) {
   const router = express.Router();
 
   // Get all emails
@@ -121,8 +123,8 @@ module.exports = function (app, mailserver, basePathname) {
       .then((mail) => {
         if (req.params.relayTo) {
           if (emailRegexp.test(req.params.relayTo)) {
-            mail.to = [{ address: req.params.relayTo }];
-            mail.envelope.to = [{ address: req.params.relayTo, args: false }];
+            mail.to = [{ address: req.params.relayTo, name: "" }];
+            mail.envelope.to = [{ address: req.params.relayTo, name: "" }];
           } else {
             return res.status(400).json({
               error: "Incorrect email address provided :" + req.params.relayTo,
@@ -148,4 +150,4 @@ module.exports = function (app, mailserver, basePathname) {
     res.json(true);
   });
   app.use(basePathname, router);
-};
+}

@@ -4,13 +4,13 @@
  * MailDev - web
  */
 import { MailServer } from "./mailserver";
+import { routes } from "./routes";
 
 const express = require("express");
 const cors = require("cors");
 const http = require("http");
 const https = require("https");
 const socketio = require("socket.io");
-const routes = require("./routes");
 const auth = require("./auth");
 const logger = require("./logger");
 const path = require("path");

@@ -97,7 +97,7 @@ export class MailServer {
     }
 
     if (options?.mailDir) {
-      loadMailsFromDirectory(this);
+      this.loadMailsFromDirectory();
     }
   }
 
@@ -337,6 +337,31 @@ export class MailServer {
     const stream = await this.getRawEmail(id);
     return ["message/rfc822", filename, stream];
   }
+
+  async loadMailsFromDirectory(): Promise<void[]> {
+    const self = this;
+    const persistencePath = await pfs.realpath(this.mailDir);
+    const files = await pfs.readdir(persistencePath).catch((err) => {
+      logger.error(`Error during reading of the mailDir ${persistencePath}`);
+      throw new Error(`Error during reading of the mailDir ${persistencePath}`);
+    });
+
+    this.store.length = 0;
+    const saved = files.map(async function (file) {
+      const envelope = {
+        id: path.parse(file).name,
+        from: [],
+        to: [],
+        host: undefined,
+        remoteAddress: undefined,
+        isRead: false,
+      };
+      const email = await getDiskEmail(self.mailDir, envelope);
+      return saveEmailToStore(self, email);
+    });
+
+    return Promise.all(saved);
+  }
 }
 
 /**
@@ -357,30 +382,6 @@ function onSmtpError(err) {
 function createMailDir(mailDir: string) {
   fs.mkdirSync(mailDir, { recursive: true });
   logger.info("MailDev using directory %s", mailDir);
-}
-
-async function loadMailsFromDirectory(mailServer: MailServer): Promise<void[]> {
-  const persistencePath = await pfs.realpath(mailServer.mailDir);
-  const files = await pfs.readdir(persistencePath).catch((err) => {
-    logger.error(`Error during reading of the mailDir ${persistencePath}`);
-    throw new Error(`Error during reading of the mailDir ${persistencePath}`);
-  });
-
-  mailServer.store.length = 0;
-  const saved = files.map(async function (file) {
-    const envelope = {
-      id: path.parse(file).name,
-      from: [],
-      to: [],
-      host: undefined,
-      remoteAddress: undefined,
-      isRead: false,
-    };
-    const email = await getDiskEmail(mailServer.mailDir, envelope);
-    return saveEmailToStore(mailServer, email);
-  });
-
-  return Promise.all(saved);
 }
 
 async function saveAttachment(mailServer: MailServer, id, attachment): Promise<void> {

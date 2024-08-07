@@ -1,9 +1,7 @@
 "use strict";
 
-const utils = (module.exports = {});
-
 // Create an unique id, length 8 characters
-utils.makeId = function () {
+export function makeId(): string {
   let text = "";
   const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
@@ -11,23 +9,18 @@ utils.makeId = function () {
     text += possible.charAt(Math.floor(Math.random() * possible.length));
   }
   return text;
-};
-
-// Clone object
-utils.clone = function (object) {
-  return JSON.parse(JSON.stringify(object));
-};
+}
 
 // Format bytes
 // Source: https://stackoverflow.com/a/18650828/3143704
-utils.formatBytes = function (bytes, decimals = 2) {
+export function formatBytes(bytes: number, decimals: number = 2): string {
   if (bytes === 0) return "0 bytes";
   const k = 1024;
   const dm = decimals < 0 ? 0 : decimals;
   const sizes = ["bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
-};
+}
 
 function lookup(obj, path) {
   const parts = path.split(".");
@@ -46,9 +39,9 @@ function lookup(obj, path) {
   }
 }
 
-utils.filterEmails = function (emails, query) {
+export function filterEmails(emails: string[], query): string[] {
   return emails.filter((email) => {
-    const hits = [];
+    const hits: boolean[] = [];
     for (const key in query) {
       if (Object.hasOwnProperty.call(query, key)) {
         const element = query[key];
@@ -62,8 +55,8 @@ utils.filterEmails = function (emails, query) {
     }
     return !hits.includes(false);
   });
-};
+}
 
-utils.delay = function (ms) {
+export function delay(ms): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
-};
+}
