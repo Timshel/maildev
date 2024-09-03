@@ -8,7 +8,6 @@ import type {
   StructuredHeader,
 } from "./type";
 
-const crypto = require("crypto");
 const mime = require("mime");
 const simpleParser = require("mailparser").simpleParser;
 const strtotime = require("./helpers/strtotime");
@@ -63,15 +62,8 @@ export async function parse(input): Promise<ParsedMail> {
         attachment.contentType,
       );
 
-      const contentId =
-        !attachment.contentId && generatedFileName
-          ? crypto.createHash("md5").update(Buffer.from(generatedFileName, "utf-8")).digest("hex") +
-            "@mailparser"
-          : attachment.contentId;
-
       return {
         ...attachment,
-        contentId,
         generatedFileName,
       };
     });

@@ -14,7 +14,6 @@ import { Outgoing } from "./outgoing";
 import { SMTPServer } from "smtp-server";
 import { promises as pfs } from "fs";
 
-const crypto = require("crypto");
 const events = require("events");
 const fs = require("fs");
 const os = require("os");
@@ -391,7 +390,7 @@ export class MailServer {
     }
 
     for (const attachment of mail.attachments) {
-      if (attachment.filename === filename) {
+      if (attachment.generatedFileName === filename) {
         return attachment;
       }
     }
@@ -454,17 +453,6 @@ function createMailDir(mailDir: string) {
   logger.info("MailDev using directory %s", mailDir);
 }
 
-async function saveAttachment(mailServer: MailServer, id, attachment): Promise<void> {
-  await pfs.mkdir(path.join(mailServer.mailDir, id), { recursive: true });
-
-  const contentId =
-    attachment.contentId ??
-    crypto.createHash("md5").update(Buffer.from(attachment.filename, "utf-8")).digest("hex") +
-      "@mailparser";
-
-  return pfs.writeFile(path.join(mailServer.mailDir, id, contentId), attachment.content);
-}
-
 async function getDiskEmail(mailDir: string, envelope: Envelope): Promise<Mail> {
   const emlPath = path.join(mailDir, envelope.id + ".eml");
   const data = await pfs.readFile(emlPath, "utf8");
@@ -496,12 +484,6 @@ async function buildMail(
 // Save an email object on stream end
 async function saveEmailToStore(mailServer: MailServer, mail: Mail): Promise<void> {
   logger.log("Saving email: %s, id: %s", mail.subject, mail.id);
-
-  await Promise.all(
-    mail.attachments.map((attachment) => {
-      return saveAttachment(mailServer, mail.id, attachment);
-    }),
-  );
 
   mailServer.store.push(mail.envelope);
   mailServer.eventEmitter.emit("new", mail);

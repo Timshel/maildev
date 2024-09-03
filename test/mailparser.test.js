@@ -296,23 +296,6 @@ describe("Mailparser attachment encodings", () => {
 });
 
 describe("Mailparser Attachment Content-Id", () => {
-  it("Default", (done) => {
-    const encodedText =
-      "Content-Type: application/octet-stream\r\n" +
-      "Content-Transfer-Encoding: QUOTED-PRINTABLE\r\n" +
-      'Content-Disposition: attachment; filename="=?UTF-8?Q?=C3=95=C3=84=C3=96=C3=9C?="\r\n' +
-      "\r\n" +
-      "=00=01=02=03=FD=FE=FF";
-
-    mailParser(encodedText).then((mail) => {
-      assert.strictEqual(
-        mail?.attachments[0]?.contentId,
-        "7c7cf35ce5becf62faea56ed8d0ad6e4@mailparser",
-      );
-      done();
-    });
-  });
-
   it("Defined", (done) => {
     const encodedText =
       "Content-Type: application/octet-stream\r\n" +
