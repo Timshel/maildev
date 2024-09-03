@@ -1,4 +1,10 @@
-
+## 3.0.0-rc1
+- Stop writing attachments to disk (Should fix: https://github.com/maildev/maildev/issues/467).
+- Add `MailBuffer` to easily wait for a specific mail
+  ```ts
+  const buffer = mailServer.buffer("totot@gmail.com");
+  const welcome = await buffer.next((m) => m.subject.startsWith("Welcome"));
+  ```
 
 ## 3.0.0-rc0
 
