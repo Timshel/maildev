@@ -1,0 +1,149 @@
+/* global describe, it, before, after */
+"use strict";
+
+/**
+ * MailDev - mailserver.js -- test the mailserver options
+ */
+
+const assert = require("assert");
+const SMTPConnection = require("nodemailer/lib/smtp-connection");
+const MailServer = require("../dist/lib/mailserver").MailServer;
+const nodemailer = require("nodemailer");
+const port = 9025;
+
+async function createTransporter(port, auth) {
+  return nodemailer.createTransport({
+    port: port,
+    auth,
+  });
+}
+
+describe("MailBuffer", () => {
+  let mailServer;
+  let transporter;
+
+  before(async () => {
+    mailServer = new MailServer({
+      port: port,
+      auth: { user: "bodhi", pass: "surfing" },
+    });
+    await mailServer.listen();
+
+    transporter = await createTransporter(port, { type: "login", user: "bodhi", pass: "surfing" });
+    return transporter.verify();
+  });
+
+  after((done) => {
+    mailServer.close().finally(() => {
+      done();
+    });
+  });
+
+  const emailOpts = {
+    from: "johnny.utah@fbi.gov",
+    to: "bodhi@gmail.com",
+    subject: "Test",
+    html: "Test",
+  };
+
+  function sendMail(subject = emailOpts.subject) {
+    const mail = {
+      ...emailOpts,
+      subject,
+    };
+    transporter.sendMail(mail);
+    return subject;
+  }
+
+  it("should resolve when receiving email", async () => {
+    const buffer = mailServer.buffer(emailOpts.to);
+    const p = buffer.next((_) => true);
+
+    sendMail();
+
+    const received = await p;
+
+    assert.strictEqual(received.from[0]?.address, emailOpts.from);
+    assert.strictEqual(received.to[0]?.address, emailOpts.to);
+    assert.strictEqual(received.subject, emailOpts.subject);
+
+    buffer.close();
+  });
+
+  it("should resolve an already received email", async () => {
+    const buffer = mailServer.buffer(emailOpts.to);
+
+    sendMail();
+    await mailServer.next(emailOpts.to);
+
+    const received = await buffer.next((_) => true);
+
+    assert.strictEqual(received.from[0]?.address, emailOpts.from);
+    assert.strictEqual(received.to[0]?.address, emailOpts.to);
+    assert.strictEqual(received.subject, emailOpts.subject);
+
+    buffer.close();
+  });
+
+  it("should resolve out of order mails", async () => {
+    const buffer = mailServer.buffer(emailOpts.to);
+
+    const subject1 = sendMail("Not Dropped1");
+    const subject2 = sendMail("Not Dropped2");
+    const subject3 = sendMail("Not Dropped3");
+    const subject4 = sendMail("Not Dropped4");
+
+    const mail4 = await buffer.next((m) => m.subject === subject4);
+    assert.strictEqual(mail4.subject, subject4);
+
+    const mail3 = await buffer.next((m) => m.subject === subject3);
+    assert.strictEqual(mail3.subject, subject3);
+
+    const mail2 = await buffer.next((m) => m.subject === subject2);
+    assert.strictEqual(mail2.subject, subject2);
+
+    const mail1 = await buffer.next((m) => m.subject === subject1);
+    assert.strictEqual(mail1.subject, subject1);
+
+    buffer.close();
+  });
+
+  it("should consume email by default", async () => {
+    const buffer = mailServer.buffer(emailOpts.to);
+
+    sendMail();
+
+    const received = await buffer.next((_) => true);
+    assert.strictEqual(received.subject, emailOpts.subject);
+
+    const rejected = buffer.next((_) => true);
+    buffer.close();
+    await assert.rejects(rejected);
+  });
+
+  it("should not consume if specified", async () => {
+    const buffer = mailServer.buffer(emailOpts.to);
+
+    sendMail();
+
+    const received1 = await buffer.next((_) => true, false);
+    assert.strictEqual(received1.subject, emailOpts.subject);
+    const received2 = await buffer.next((_) => true, true);
+    assert.strictEqual(received2.subject, emailOpts.subject);
+    const rejected = buffer.next((_) => true);
+
+    buffer.close();
+    await assert.rejects(rejected);
+  });
+
+  it("should reject promises when closing", async () => {
+    const buffer = mailServer.buffer(emailOpts.to);
+    const p1 = buffer.next((_) => true);
+    const p2 = buffer.next((_) => true);
+
+    buffer.close();
+
+    await assert.rejects(p1);
+    await assert.rejects(p2);
+  });
+});

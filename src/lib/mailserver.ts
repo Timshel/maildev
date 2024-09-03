@@ -9,6 +9,7 @@ import type { ReadStream } from "fs";
 
 import { calculateBcc } from "./helpers/bcc";
 import { createOnAuthCallback } from "./helpers/smtp";
+import { MailBuffer } from "./mailbuffer";
 import { parse as mailParser } from "./mailparser";
 import { Outgoing } from "./outgoing";
 import { SMTPServer } from "smtp-server";
@@ -129,6 +130,15 @@ export class MailServer {
     }
 
     return inner(subject);
+  }
+
+  /**
+   * Return a struct which store received emails.
+   * Then allow to obtain a `Promise<Mail>` dependant on a predicate `(Mail) => boolean`.
+   * Allow to wait for `Mail` independant of their order of arrival.
+   */
+  buffer(subject: string): MailBuffer {
+    return new MailBuffer(this, subject);
   }
 
   constructor(

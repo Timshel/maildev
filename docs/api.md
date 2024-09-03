@@ -132,6 +132,9 @@ The `close` and `delete` event subjects are reserved and cannot be used to wait 
 **iterator(subject): AsyncIterator<Mail>** - Generator to iterate over received email with matching event subject.
 Use an internal array to store received email even when not consumming. Don't forget to use `.return()` to close it.
 
+**buffer(subject): MailBuffer** - Return a struct which store received emails.
+Then **MailBuffer.next( (Mail) => boolean )** allows to wait for a specific `Mail` independant of the order of arrival.
+
 ### Callbacks
 
 **on('new', callback)** - Event called when a new email is received. Callback
