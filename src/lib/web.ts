@@ -8,6 +8,7 @@ import { routes } from "./routes";
 
 const express = require("express");
 const cors = require("cors");
+const fs = require("fs");
 const http = require("http");
 const https = require("https");
 const socketio = require("socket.io");
@@ -24,6 +25,7 @@ export interface WebOptions {
 }
 
 export class Web {
+  protocol: string;
   port: number;
   host: string;
   basePathname: string;
@@ -37,11 +39,15 @@ export class Web {
   constructor(mailserver: MailServer, options?: WebOptions) {
     const app = express();
 
+    this.protocol = options?.ssl ? "https" : "http";
     this.port = options?.port ?? 1080;
     this.host = options?.host ?? "0.0.0.0";
     this.basePathname = options?.basePathname ?? "/";
 
-    this.server = options?.ssl ? https.createServer(options?.ssl, app) : http.createServer(app);
+    this.server = options?.ssl ? https.createServer({
+      key: fs.readFileSync(options?.ssl.key),
+      cert: fs.readFileSync(options?.ssl.cert),
+    }, app) : http.createServer(app);
 
     if (options?.auth) {
       app.use(auth(options?.auth?.user, options?.auth?.pass));
@@ -72,12 +78,8 @@ export class Web {
 
     return new Promise((resolve, reject) => {
       self.server.listen(self.port, self.host, () => {
-        logger.info(
-          "MailDev webapp running at http://%s:%s%s",
-          self.host,
-          self.port,
-          self.basePathname,
-        );
+
+        logger.info(`MailDev webapp running at ${self.protocol}://${self.host}:${self.port}${self.basePathname}`);
         resolve();
       });
     });

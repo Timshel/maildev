@@ -8,4 +8,5 @@ dist
 maildev-*
 node_modules
 npm-debug.log
+ssl
 tsconfig.tsbuildinfo
