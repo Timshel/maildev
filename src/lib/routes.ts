@@ -21,7 +21,7 @@ export function routes(app, mailserver: MailServer, basePathname: string) {
     mailserver
       .getAllEmail()
       .then((mails) => res.json(req.query ? filterEmails(mails, req.query) : mails))
-      .catch((err) => res.status(404).json([]));
+      .catch((err) => res.status(500).json({ error: err.message }));
   });
 
   // Get single email
