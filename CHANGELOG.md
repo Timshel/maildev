@@ -1,3 +1,7 @@
+## 3.0.0-rc2
+- Fix single mail deletion
+- Fix https key and cert arguments
+
 ## 3.0.0-rc1
 - Stop writing attachments to disk (Should fix: https://github.com/maildev/maildev/issues/467).
 - Add `MailBuffer` to easily wait for a specific mail
