@@ -351,6 +351,7 @@ export class MailServer {
     }
     const mail = this.store[emailIndex];
     logger.warn("Deleting email - %s", mail.id);
+    this.store.splice(emailIndex, 1);
 
     return Promise.all([
       pfs.unlink(path.join(this.mailDir, id + ".eml")).catch((err) => {
