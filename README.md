@@ -37,6 +37,12 @@ For a guide for usage with Docker,
 
     $ docker run -p 1080:1080 -p 1025:1025 timshel/maildev
 
+By default the following environment variables are set:
+
+- MAILDEV_WEB_PORT=1080
+- MAILDEV_SMTP_PORT=1025
+- MAILDEV_MAIL_DIRECTORY=/tmp/maildev
+
 ## Usage
 
 ```

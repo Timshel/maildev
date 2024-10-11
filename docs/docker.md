@@ -83,8 +83,9 @@ To use MailDev with Docker Compose, add the following to your
 
 ```yaml
 maildev:
-  image: maildev/maildev
+  image: timshel/maildev
   ports:
+    - "1025:1025"
     - "1080:1080"
 ```
 
