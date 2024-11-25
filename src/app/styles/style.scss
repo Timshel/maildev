@@ -6,12 +6,11 @@
  */
 
 
-@import 'normalize';
-@import 'mixins';
-@import 'fa/fontawesome';
-//@import 'fa/regular';
-@import 'fa/solid';
-//@import 'fa/brand';
+@use "sass:color";
+@use 'normalize';
+@use 'mixins';
+@use 'fa/fontawesome';
+@use 'fa/solid';
 
 
 /**
@@ -85,12 +84,12 @@ th, td {
  */
 
 body.dark-theme {
-    background-color: darken($brand, 46);
+    background-color: color.adjust($brand, $lightness: -46%);
 }
 
 .application-container {
-    @include display-flex();
-    @include align-items(stretch);
+    @include mixins.display-flex();
+    @include mixins.align-items(stretch);
     flex-flow: row nowrap;
     height: 100%;
     width: 100%;
@@ -100,19 +99,19 @@ body.dark-theme {
 
 
 .main-container {
-    @include flex(1 70%);
+    @include mixins.flex(1 70%);
     overflow-y: hidden;
 }
 
 
 
 .sidebar {
-    @include flex(1 33%);
+    @include mixins.flex(1 33%);
     max-width: 26em;
     height: 100%;
     background: white;
     body.dark-theme & {
-        background-color: darken($brand, 38);
+        background-color: color.adjust($brand, $lightness: -38%);
     }
 }
 
@@ -123,11 +122,11 @@ body.dark-theme {
     width: 100%;
     max-width: 26em;
     background: $brand;
-    border-right: 1px solid darken($brand, 16);
+    border-right: 1px solid color.adjust($brand, $lightness: -16%);
 
     body.dark-theme & {
-        background-color: darken($brand, 32);
-        border-right-color: darken($brand, 28);
+        background-color: color.adjust($brand, $lightness: -32%);
+        border-right-color: color.adjust($brand, $lightness: -28%);
     }
 
 }
@@ -140,9 +139,9 @@ body.dark-theme {
     padding: 0.3em 0 0 0.8em;
     height: $toolbarHeight;
     box-sizing: border-box;
-    border-bottom: 1px solid darken($brand, 6);
+    border-bottom: 1px solid color.adjust($brand, $lightness: -6%);
     body.dark-theme & {
-        border-bottom-color: darken($brand, 28);
+        border-bottom-color: color.adjust($brand, $lightness: -28%);
     }
 }
 
@@ -190,7 +189,7 @@ body.dark-theme {
     box-sizing: border-box;
     display: block;
     list-style: none;
-    @include display-flex();
+    @include mixins.display-flex();
     margin: 0;
     padding: 0;
     height: 100%;
@@ -202,10 +201,10 @@ body.dark-theme {
     height: 100%;
 }
 .header-nav-item-link {
-    @include display-flex();
-    @include align-items(center);
-    @include align-content(center);
-    @include justify-content(center);
+    @include mixins.display-flex();
+    @include mixins.align-items(center);
+    @include mixins.align-content(center);
+    @include mixins.justify-content(center);
     flex-flow: row nowrap;
     box-sizing: border-box;
     height: 100%;
@@ -261,7 +260,7 @@ body.dark-theme {
     cursor: pointer;
 
     &:hover {
-        background: darken(white,5);
+        background: color.adjust(white,$lightness: -5%);
     }
     &.disabled {
         pointer-events: none;
@@ -286,7 +285,7 @@ body.dark-theme {
     vertical-align: middle;
     margin-bottom: 2px;
     content: "";
-    background: lighten($brand,32);
+    background: color.adjust($brand,$lightness: 32%);
     border-radius: 1em;
     cursor: pointer;
     outline: none;
@@ -297,7 +296,7 @@ body.dark-theme {
         width: $size;
         margin-bottom: 2px;
         content: "";
-        background: lighten($brand,16);
+        background: color.adjust($brand,$lightness: 16%);
         //box-shadow: 0px 0px 0px 2px inset white;
         border-radius: 50%;
         transition: margin 100ms;
@@ -305,7 +304,7 @@ body.dark-theme {
 
     &:checked::before {
         margin-left: $size;
-        background-color: darken($brand, 20);
+        background-color: color.adjust($brand, $lightness: -20%);
     }
 
     &:disabled {
@@ -327,9 +326,9 @@ body.dark-theme {
     height: calc(100% - #{1 * $toolbarHeight});
     overflow-x: hidden;
     overflow-y: hidden;
-    border-right: 1px solid darken(white, 10);
+    border-right: 1px solid color.adjust(white, $lightness: -10%);
     body.dark-theme & {
-        border-right-color: darken($brand, 32);
+        border-right-color: color.adjust($brand, $lightness: -32%);
     }
 
 }
@@ -341,9 +340,9 @@ body.dark-theme {
     height: calc(100% - #{$searchHeight});
     overflow-x: hidden;
     overflow-y: auto;
-    border-top: 1px solid darken(white, 10);
+    border-top: 1px solid color.adjust(white, $lightness: -10%);
     body.dark-theme & {
-        border-top-color: darken($brand, 32);
+        border-top-color: color.adjust($brand, $lightness: -32%);
     }
 }
 
@@ -360,9 +359,9 @@ body.dark-theme {
     position: absolute;
     top: 0.7em;
     left: 0.8em;
-    color: darken(white,55);
+    color: color.adjust(white,$lightness: -55%);
     body.dark-theme & {
-        color: darken(white,15);
+        color: color.adjust(white,$lightness: -15%);
     }
 }
 
@@ -381,7 +380,7 @@ body.dark-theme {
 
     &:focus {
         outline: none;
-        background-color: darken(white, 5);
+        background-color: color.adjust(white, $lightness: -5%);
         + .search-icon {
             color: black;
         }
@@ -403,14 +402,14 @@ body.dark-theme {
 
 
     body.dark-theme & {
-        background-color: darken($brand, 38);
+        background-color: color.adjust($brand, $lightness: -38%);
         color: rgba(white,1);
         & + .search-icon {
             color: rgba(white,.5);
         }
 
         &:focus {
-            background-color: darken($brand, 38);
+            background-color: color.adjust($brand, $lightness: -38%);
             & + .search-icon {
                 color: rgba(white,1);
             }
@@ -468,7 +467,7 @@ body.dark-theme {
     display: block;
     padding: 0.9em 1em 1.1em;
     background: white;
-    border-top: 1px solid darken(white,5);
+    border-top: 1px solid color.adjust(white,$lightness: -5%);
     text-decoration: none;
     font-size: 12px;
     line-height: 14px;
@@ -524,8 +523,8 @@ body.dark-theme {
         }
     }
     body.dark-theme & {
-        background-color: darken($brand, 38);
-        border-top-color: darken($brand, 32);
+        background-color: color.adjust($brand, $lightness: -38%);
+        border-top-color: color.adjust($brand, $lightness: -32%);
     }
     body.dark-theme &:focus::after {
         background: rgba(white,.07);
@@ -537,16 +536,16 @@ body.dark-theme {
 }
 
 .email-item:last-of-type .email-item-link {
-    border-bottom: 1px solid darken(white,5);
+    border-bottom: 1px solid color.adjust(white,$lightness: -5%);
     body.dark-theme & {
-        border-bottom-color: darken($brand, 32);
+        border-bottom-color: color.adjust($brand, $lightness: -32%);
     }
 }
 
 .email-item.unread .email-item-link {
-    background: lighten($brand,38);
-    border-top-color: lighten($brand,34);
-    border-bottom-color: lighten($brand,34);
+    background: color.adjust($brand,$lightness: 38%);
+    border-top-color: color.adjust($brand,$lightness: 34%);
+    border-bottom-color: color.adjust($brand,$lightness: 34%);
     .title {
         //color: darken($brand,30);
         font-weight: 600;
@@ -555,21 +554,21 @@ body.dark-theme {
         }
     }
     body.dark-theme & {
-        background-color: darken($brand, 28);
-        border-top-color: darken($brand, 23);
-        border-bottom-color: darken($brand, 23);
+        background-color: color.adjust($brand, $lightness: -28%);
+        border-top-color: color.adjust($brand, $lightness: -23%);
+        border-bottom-color: color.adjust($brand, $lightness: -23%);
     }
 }
 
 .email-item.unread + .email-item .email-item-link {
-    border-top-color: lighten($brand,34);
+    border-top-color: color.adjust($brand,$lightness: 34%);
     body.dark-theme & {
-        border-top-color: darken($brand, 23);
+        border-top-color: color.adjust($brand, $lightness: -23%);
     }
 }
 
 .email-item.current .email-item-link {
-    background: darken($brand,0);
+    background: color.adjust($brand,$lightness: -0%);
     .title {
         color: rgba(white,.95);
         font-weight: 400;
@@ -581,7 +580,7 @@ body.dark-theme {
         color: rgba(white,.7);
     }
     body.dark-theme & {
-        background: darken($brand,5);
+        background: color.adjust($brand,$lightness: -5%);
     }
 }
 
@@ -630,10 +629,10 @@ body.dark-theme {
 
 .email-content-view-html {
     text-align: center;
-    background: lighten($brand, 42);
+    background: color.adjust($brand, $lightness: 42%);
 
     body.dark-theme & {
-        background: darken($brand, 52);
+        background: color.adjust($brand, $lightness: -52%);
     }
 }
 
@@ -652,9 +651,9 @@ body.dark-theme {
     height: 100%;
     position: relative; // set position for resize rendering issue
     //border: 1px solid darken(white,10);
-    background: darken(white,0);
+    background: color.adjust(white,$lightness: -0%);
     body.dark-theme & {
-        background: darken($brand, 46);
+        background: color.adjust($brand, $lightness: -46%);
     }
 }
 
@@ -664,16 +663,16 @@ body.dark-theme {
     width: 100%;
     height: $toolbarHeight;
     background-color: white;
-    background: darken($brand, 12);
-    border-bottom: 1px solid darken($brand, 16);
+    background: color.adjust($brand, $lightness: -12%);
+    border-bottom: 1px solid color.adjust($brand, $lightness: -16%);
     list-style: none;
     margin: 0;
     padding: 0;
 
-    @include display-flex();
-    @include align-items(center);
-    @include align-content(center);
-    @include justify-content(center);
+    @include mixins.display-flex();
+    @include mixins.align-items(center);
+    @include mixins.align-content(center);
+    @include mixins.justify-content(center);
     flex-flow: row nowrap;
 
     font-size: 14px;
@@ -705,10 +704,10 @@ body.dark-theme {
     li a span {
         box-sizing: border-box;
         height: 100%;
-        @include display-flex();
-        @include align-items(center);
-        @include align-content(center);
-        @include justify-content(center);
+        @include mixins.display-flex();
+        @include mixins.align-items(center);
+        @include mixins.align-content(center);
+        @include mixins.justify-content(center);
         flex-flow: row nowrap;
         padding-bottom: 0.12em;
     }
@@ -724,8 +723,8 @@ body.dark-theme {
 
 
     body.dark-theme & {
-        background-color: darken($brand, 38);
-        border-bottom-color: darken($brand, 32);
+        background-color: color.adjust($brand, $lightness: -38%);
+        border-bottom-color: color.adjust($brand, $lightness: -32%);
     }
 
 
@@ -735,14 +734,14 @@ body.dark-theme {
     box-sizing: border-box;
     width: 100%;
     background-color: white;
-    background: lighten($brand, 38);
-    border-bottom: 1px solid lighten($brand, 28);
+    background: color.adjust($brand, $lightness: 38%);
+    border-bottom: 1px solid color.adjust($brand, $lightness: 28%);
     margin: 0;
     padding: .5em 1em;
     font-size: 14px;
 
     .row {
-        @include display-flex();
+        @include mixins.display-flex();
         flex-flow: row nowrap;
 
         @media (max-width: 1100px) {
@@ -760,7 +759,7 @@ body.dark-theme {
         display: inline-block;
         text-align: right;
         margin-right: .25em;
-        color: desaturate(darken($brand, 12), 20);
+        color: color.adjust(color.adjust($brand, $lightness: -12%), $saturation: -20%);
 
         @media (max-width: 1100px) {
             text-align: left;
@@ -780,10 +779,10 @@ body.dark-theme {
 
 
     .address .address-address {
-        color: rgba(lighten(black, 25), .40);
+        color: rgba(color.adjust(black, $lightness: 25%), .40);
     }
     .address .address-name {
-        color: lighten(black, 30);
+        color: color.adjust(black, $lightness: 30%);
     }
 
     app-address + app-address::before {
@@ -792,19 +791,19 @@ body.dark-theme {
 
 
     body.dark-theme & {
-        background-color: darken($brand, 28);
-        border-bottom-color: darken($brand, 18);
+        background-color: color.adjust($brand, $lightness: -28%);
+        border-bottom-color: color.adjust($brand, $lightness: -18%);
         color: white;
 
         .description {
-            color: desaturate(lighten($brand, 12), 20);
+            color: color.adjust(color.adjust($brand, $lightness: 12%), $saturation: -20%);
         }
 
         .address .address-address {
-            color: rgba(darken(white, 40), .65);
+            color: rgba(color.adjust(white, $lightness: -40%), .65);
         }
         .address .address-name {
-            color: darken(white, 30);
+            color: color.adjust(white, $lightness: -30%);
         }
     }
 
@@ -848,8 +847,8 @@ body.dark-theme {
     }
 
     li a span {
-        @include display-flex();
-        @include justify-content(start);
+        @include mixins.display-flex();
+        @include mixins.justify-content(start);
     }
 
     &.open {
@@ -861,7 +860,7 @@ body.dark-theme {
     padding: 0.5em 0.5em;
     color: black;
     &:hover {
-        background: darken(white,5);
+        background: color.adjust(white,$lightness: -5%);
     }
     &.disabled {
         pointer-events: none;

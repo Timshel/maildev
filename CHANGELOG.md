@@ -1,3 +1,9 @@
+## 3.0.1
+- Update dependencies
+
+## 3.0.0-rc3
+- Set and create the `MAILDEV_MAIL_DIRECTORY` to `/tmp/maildev` in the docker image to prevent issues with named volume.
+
 ## 3.0.0-rc2
 - Fix single mail deletion
 - Fix https key and cert arguments

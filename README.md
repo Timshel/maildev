@@ -31,7 +31,7 @@ It's not published on `npm` but due to [Github](https://docs.npmjs.com/cli/v10/c
 ## Docker Run
 
 If you want to use MailDev with [Docker](https://www.docker.com/), you can use the
-[**maildev/maildev** image on Docker Hub](https://hub.docker.com/r/timshel/maildev).
+[**timshel/maildev** image on Docker Hub](https://hub.docker.com/r/timshel/maildev).
 For a guide for usage with Docker,
 [checkout the docs](https://github.com/timshel/maildev/blob/master/docs/docker.md).
 

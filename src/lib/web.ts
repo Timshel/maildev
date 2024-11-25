@@ -44,10 +44,15 @@ export class Web {
     this.host = options?.host ?? "0.0.0.0";
     this.basePathname = options?.basePathname ?? "/";
 
-    this.server = options?.ssl ? https.createServer({
-      key: fs.readFileSync(options?.ssl.key),
-      cert: fs.readFileSync(options?.ssl.cert),
-    }, app) : http.createServer(app);
+    this.server = options?.ssl
+      ? https.createServer(
+          {
+            key: fs.readFileSync(options?.ssl.key),
+            cert: fs.readFileSync(options?.ssl.cert),
+          },
+          app,
+        )
+      : http.createServer(app);
 
     if (options?.auth) {
       app.use(auth(options?.auth?.user, options?.auth?.pass));
@@ -78,8 +83,9 @@ export class Web {
 
     return new Promise((resolve, reject) => {
       self.server.listen(self.port, self.host, () => {
-
-        logger.info(`MailDev webapp running at ${self.protocol}://${self.host}:${self.port}${self.basePathname}`);
+        logger.info(
+          `MailDev webapp running at ${self.protocol}://${self.host}:${self.port}${self.basePathname}`,
+        );
         resolve();
       });
     });

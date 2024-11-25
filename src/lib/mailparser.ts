@@ -121,9 +121,15 @@ function getSringArray(headers: MailParser.Headers, key: string): string[] {
   if (typeof value === "string") {
     return [value];
   } else if (Array.isArray(value)) {
-    return value;
+    return value.filter((elt) => {
+      const isString = typeof elt === "string";
+      if (!isString) {
+        logger.error("Invalid header value for %s, expected string[] got a %s", key, value);
+      }
+      return isString;
+    });
   } else {
-    logger.error("Invalid header value for %s, expected string or [] got %s", key, value);
+    logger.error("Invalid header value for %s, expected string or string[] got %s", key, value);
   }
   return [];
 }
