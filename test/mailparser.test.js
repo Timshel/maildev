@@ -174,6 +174,47 @@ describe("Mailparser General tests", () => {
       done();
     });
   });
+
+  it("Cc address", (done) => {
+    const encodedText = "cc: andris <andris@disposebox.com>\n" + "Subject: ÕÄÖÜ\n" + "\r" + "1234";
+
+    mailParser(encodedText).then((mail) => {
+      assert.deepStrictEqual(mail.cc, [
+        {
+          name: "andris",
+          address: "andris@disposebox.com",
+        },
+      ]);
+      done();
+    });
+  });
+
+  it("Bcc address", (done) => {
+    const encodedText = "bcc: andris <andris@disposebox.com>\n" + "Subject: ÕÄÖÜ\n" + "\r" + "1234";
+
+    mailParser(encodedText).then((mail) => {
+      assert.deepStrictEqual(mail.bcc, [
+        {
+          name: "andris",
+          address: "andris@disposebox.com",
+        },
+      ]);
+      done();
+    });
+  });
+
+  it("No addresses", (done) => {
+    const encodedText = "Subject: ÕÄÖÜ\n" + "\r" + "1234";
+
+    mailParser(encodedText).then((mail) => {
+      assert.deepStrictEqual(mail.to, []);
+      assert.deepStrictEqual(mail.from, []);
+      assert.deepStrictEqual(mail.cc, []);
+      assert.deepStrictEqual(mail.bcc, []);
+      assert.deepStrictEqual(mail.replyTo, []);
+      done();
+    });
+  });
 });
 
 describe("Mailparser Text encodings", () => {
