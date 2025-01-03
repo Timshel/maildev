@@ -1,3 +1,7 @@
+## 3.0.3
+
+- ParsedMail empty addresses fields (to, from, cc, bcc, replyTo) should returm empty arrays
+
 ## 3.0.2
 
 - Fix reported version
