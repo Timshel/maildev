@@ -121,7 +121,7 @@ describe("MailBuffer", () => {
     await assert.rejects(rejected);
   });
 
-  it("should not consume if specified", async () => {
+  it("should not consume an existing mail if specified", async () => {
     const buffer = mailServer.buffer(emailOpts.to);
 
     sendMail();
@@ -134,6 +134,36 @@ describe("MailBuffer", () => {
 
     buffer.close();
     await assert.rejects(rejected);
+  });
+
+  it("should not consume a new mail if specified", async () => {
+    const buffer = mailServer.buffer(emailOpts.to);
+    const wait1 = buffer.next((_) => true, false);
+    const wait2 = buffer.next((_) => true, false);
+
+    sendMail();
+
+    const received1 = await wait1;
+    assert.strictEqual(received1.subject, emailOpts.subject);
+    const received2 = await wait2;
+    assert.strictEqual(received2.subject, emailOpts.subject);
+
+    const received3 = await buffer.next((_) => true, true);
+    assert.strictEqual(received3.subject, emailOpts.subject);
+
+    const rejected = buffer.next((_) => true);
+    buffer.close();
+    await assert.rejects(rejected);
+  });
+
+  it("should resolve multiple times", async () => {
+    const buffer = mailServer.buffer(emailOpts.to);
+    for (let i = 0; i <= 7; i++) {
+      sendMail();
+      const received = await buffer.next(() => true);
+      assert.strictEqual(received.subject, emailOpts.subject);
+    }
+    buffer.close();
   });
 
   it("should reject promises when closing", async () => {

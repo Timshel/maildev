@@ -19,16 +19,20 @@ export class MailBuffer {
 
   constructor(mailServer: MailServer, subject: String) {
     this._receive = (mail) => {
-      this.mails.push(mail);
-
-      for (const { filter, resolve, consume, ..._ } of this.nexts) {
-        const index = this.mails.findIndex(filter);
+      let consumed = false;
+      let index = -1;
+      do {
+        index = this.nexts.findIndex((n) => n.filter(mail));
         if (index > -1) {
-          resolve(this.mails[index]);
-          if (consume) {
-            this.mails.splice(index, 1);
-          }
+          const n = this.nexts[index];
+          consumed = n.consume;
+          this.nexts.splice(index, 1);
+          n.resolve(mail);
         }
+      } while (index > -1 && !consumed);
+
+      if (!consumed) {
+        this.mails.push(mail);
       }
     };
 
@@ -50,10 +54,11 @@ export class MailBuffer {
     return new Promise((resolve, reject) => {
       const index = this.mails.findIndex(filter);
       if (index > -1) {
-        resolve(this.mails[index]);
+        const mail = this.mails[index];
         if (consume) {
           this.mails.splice(index, 1);
         }
+        resolve(mail);
       } else {
         this.nexts.push({
           filter,
