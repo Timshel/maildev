@@ -25,7 +25,7 @@
 It's not published on `npm` but due to [Github](https://docs.npmjs.com/cli/v10/configuring-npm/package-json#git-urls-as-dependencies) support you can use it with:
 
 ```
-"maildev": "timshel/maildev#3.0.3"
+"maildev": "timshel/maildev#3.0.4"
 ```
 
 ## Docker Run

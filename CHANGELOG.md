@@ -1,3 +1,8 @@
+## 3.0.4
+
+- MailBuffer.next correctly remove filter
+- Update dependencies
+
 ## 3.0.3
 
 - ParsedMail empty addresses fields (to, from, cc, bcc, replyTo) should returm empty arrays
