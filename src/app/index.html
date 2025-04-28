@@ -126,16 +126,16 @@
                         </div>
 
                         <ul class="email-list">
-                            <li ng-repeat="item in items | orderBy:'time':!reverse | filter: search " class="email-item  email-{{item.id}} " ng-class="{current: item.id === currentItemId, read: item.read, unread: !item.read}">
+                            <li ng-repeat="item in items | orderBy:'date':!reverse | filter: search " class="email-item  email-{{item.id}} " ng-class="{current: item.id === currentItemId, read: item.isRead, unread: !item.isRead}">
                                 <a href="#/email/{{item.id}}" class="email-item-link">
                                     <span class="title">
-                                        {{item.subject}}<span ng-hide="!item.attachments.length">&nbsp;<i class="fas fa-paperclip" ></i></span>
+                                        {{item.subject}}<span ng-hide="!item.hasAttachment">&nbsp;<i class="fas fa-paperclip" ></i></span>
                                         <span class="title-subline" title="{{item.to}}">
                                             To:&nbsp;{{item.to.0.address}}&nbsp;<span ng-if="item.to.length > 1">+{{item.to.length-1}}</span>
                                         </span>
                                     </span>
                                     <span class="subline">
-                                        {{item.time | date:'yyyy-MM-dd HH:mm:ss (Z)' }}
+                                        {{item.date | date:'yyyy-MM-dd HH:mm:ss (Z)' }}
                                     </span>
                                 </a>
                             </li>

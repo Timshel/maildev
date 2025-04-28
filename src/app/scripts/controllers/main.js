@@ -10,11 +10,12 @@ app.controller("MainCtrl", [
   "$scope",
   "$rootScope",
   "$http",
+  "Envelope",
   "Email",
   "$route",
   "$location",
   "Favicon",
-  function ($scope, $rootScope, $http, Email, $route, $location, Favicon) {
+  function ($scope, $rootScope, $http, Envelope, Email, $route, $location, Favicon) {
     $scope.notificationsSupported = "Notification" in window && window.isSecureContext;
 
     $scope.itemsLoading = true;
@@ -51,7 +52,7 @@ app.controller("MainCtrl", [
 
     const countUnread = function () {
       $scope.unreadItems = $scope.items.filter(function (email) {
-        return !email.read;
+        return !email.isRead;
       }).length;
       Favicon.setUnreadCount($scope.unreadItems);
     };
@@ -59,7 +60,7 @@ app.controller("MainCtrl", [
     // Load all emails
     const loadData = function () {
       $scope.itemsLoading = true;
-      $scope.items = Email.query(function () {
+      $scope.items = Envelope.query(function () {
         $scope.itemsLoading = false;
       });
       $scope.items.$promise.then(function () {
@@ -79,7 +80,7 @@ app.controller("MainCtrl", [
 
     $rootScope.$on("newMail", function (e, newEmail) {
       // update model
-      $scope.items.push(newEmail);
+      $scope.items.push(newEmail.envelope);
       countUnread();
 
       // update DOM at most 5 times per second
@@ -143,7 +144,7 @@ app.controller("MainCtrl", [
 
       const currentItem = filtered[0];
 
-      currentItem.read = true;
+      currentItem.isRead = true;
 
       countUnread();
     };
@@ -171,7 +172,7 @@ app.controller("MainCtrl", [
       })
         .success(function (data, status) {
           for (const email of $scope.items) {
-            email.read = true;
+            email.isRead = true;
           }
           countUnread();
         })

@@ -20,6 +20,12 @@ app
       );
     },
   ])
+  .service("Envelope", [
+    "$resource",
+    function ($resource) {
+      return $resource("envelope/:id", { id: "" });
+    },
+  ])
   .service("Favicon", [
     function () {
       const favicon = document.getElementById("favicon");

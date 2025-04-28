@@ -16,6 +16,11 @@ const emailRegexp =
 export function routes(app, mailserver: MailServer, basePathname: string) {
   const router = express.Router();
 
+  // Get all emails Enveloppe
+  router.get("/envelope", compression(), function (req, res) {
+    res.json(mailserver.getAllEnvelope());
+  });
+
   // Get all emails
   router.get("/email", compression(), function (req, res) {
     mailserver

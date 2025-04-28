@@ -230,8 +230,9 @@ export interface Envelope {
   id: string;
   from: EmailAddress[];
   to: EmailAddress[];
-  host: string | undefined;
-  remoteAddress: string | undefined;
+  date: Date;
+  subject?: string | undefined;
+  hasAttachment: boolean;
   isRead: boolean;
 }
 
