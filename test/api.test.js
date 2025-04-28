@@ -63,6 +63,7 @@ describe("API", () => {
 
   describe("listen/close", () => {
     const maildev = new MailDev({
+      port: port,
       silent: true,
       web: { disabled: true },
     });
