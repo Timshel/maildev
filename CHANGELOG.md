@@ -1,3 +1,11 @@
+## 3.0.5
+
+- Update dependencies
+- Fix date display in email list
+- Improve webapp performance, stop reading complete emails to display email list.
+  - Refreshing the webapp was alsmost impossible with thousands of emails
+  - :warning: the search filter will not work on email body anymore
+
 ## 3.0.4
 
 - MailBuffer.next correctly remove filter
