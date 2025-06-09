@@ -27,6 +27,34 @@ maildev.getAllEmail(function(err, emails){
 })
 ```
 
+## Async usage example
+
+```javascript
+const MailDev = require('maildev')
+
+const maildev = new MailDev({
+  smtp: 1025 // incoming SMTP port - default is 1025
+})
+
+await maildev.listen();
+
+// Create a MailBuffer to easily query and await news mails
+const mailBuffer = maildev.buffer(users.user1.email);
+
+-- Take an action to generate mails.
+
+// Wait forever for the Email to arrive.
+const codeMail = await mailBuffer.next((mail) => mail.subject.includes("Login Verification Code"));
+
+-- Take an action to generate more mails.
+
+// Await at most 10s for the Welcome email (default timeout)
+await mailBuffer.expect((m) => m.subject === "Welcome");
+
+await mailBuffer.close();
+await maildev.close();
+```
+
 ## Use Maildev as a middleware
 
 We can use maildev within an existing app by giving an additional parameter
@@ -132,8 +160,9 @@ The `close` and `delete` event subjects are reserved and cannot be used to wait 
 **iterator(subject): AsyncIterator<Mail>** - Generator to iterate over received email with matching event subject.
 Use an internal array to store received email even when not consumming. Don't forget to use `.return()` to close it.
 
-**buffer(subject): MailBuffer** - Return a struct which store received emails.
-Then **MailBuffer.next( (Mail) => boolean )** allows to wait for a specific `Mail` independant of the order of arrival.
+**buffer(subject, defaultTimeout: number = 10000): MailBuffer** - Return a struct which store received emails (Timeout is used when calling `expect`).
+-**MailBuffer.next( (Mail) => boolean, consume: boolean = true)** allows to wait for a specific `Mail` independant of the order of arrival.
+-**MailBuffer.expect( (Mail) => boolean, consume: boolean = true, timeout?: number)** is similar but will timeout
 
 ### Callbacks
 

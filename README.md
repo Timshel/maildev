@@ -4,7 +4,7 @@
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-black.svg)](https://prettier.io/)
 
 
-> This is a fork of ⭐️ **[maildev/maildev](https://github.com/maildev/maildev)**.
+> This is a fork of ⭐️ **[maildev/maildev](https://github.com/maildev/maildev)** with a focus on a better api for Playwright tests.
 >
 > The goal of the fork is to:
 > - Update dependencies
@@ -13,6 +13,7 @@
 > - Add async support
 > - Add additionnal features
 >   - `mailEventSubjectMapper` allow to define custom event `subject` (by default use the first recipient)
+>   - `MailBuffer` allows to easily query and `await` emails
 >
 > :warning: Due to extensive mofitications migrate with caution. :warning:
 
@@ -25,8 +26,71 @@
 It's not published on `npm` but due to [Github](https://docs.npmjs.com/cli/v10/configuring-npm/package-json#git-urls-as-dependencies) support you can use it with:
 
 ```
-"maildev": "timshel/maildev#3.0.5"
+"maildev": "timshel/maildev#3.0.6"
 ```
+
+## API
+
+MailDev can be used in your Node.js application. For more info view the [API docs](https://github.com/timshel/maildev/blob/master/docs/api.md).
+
+Example in a Playwright test:
+```javascript
+import { test, expect, type TestInfo } from '@playwright/test';
+import { MailDev } from 'maildev';
+
+let mailserver;
+
+test.beforeAll('Setup', async ({ browser }, testInfo: TestInfo) => {
+    mailserver = new MailDev({
+        port: process.env.MAILDEV_SMTP_PORT,
+        web: { port: process.env.MAILDEV_HTTP_PORT },
+    })
+
+    await mailserver.listen();
+});
+
+test.afterAll('Teardown', async ({}) => {
+    utils.stopVault();
+    if( mailserver ){
+        await mailserver.close();
+    }
+});
+
+test('2fa', async ({ page }) => {
+    const mailBuffer = mailserver.buffer("test@yopmail.com");
+
+    await test.step('login', async () => {
+        await page.goto('/');
+
+        await page.getByLabel(/Email address/).fill("test@yopmail.com");
+        await page.getByRole('button', { name: 'Continue' }).click();
+        await page.getByLabel('Master password').fill("test@yopmail.com");
+        await page.getByRole('button', { name: 'Log in with master password' }).click();
+
+        const code = await test.step('retrieve code', async () => {
+            const codeMail = await mailBuffer.expect((mail) => mail.subject.includes("Login Verification Code"));
+            const page2 = await page.context().newPage();
+            await page2.setContent(codeMail.html);
+            const code = await page2.getByTestId("2fa").innerText();
+            await page2.close();
+            return code;
+        });
+
+        await page.getByLabel(/Verification code/).fill(code);
+        await page.getByRole('button', { name: 'Continue' }).click();
+        await expect(page).toHaveTitle(/Vaults/);
+
+        await mailBuffer.expect((m) => m.subject === "Welcome");
+        await mailBuffer.expect((m) => m.subject === "New Device Logged In From Firefox");
+    })
+
+    mailBuffer.close();
+});
+
+```
+
+MailDev also has a **REST API**. For more info
+[view the docs](https://github.com/timshel/maildev/blob/master/docs/rest.md).
 
 ## Docker Run
 
@@ -81,29 +145,6 @@ Usage: maildev [options]
 | `--silent`                       |                            |                                                                                           |
 | `--log-mail-contents`            |                            | Log a JSON representation of each incoming mail                                           |
 
-## API
-
-MailDev can be used in your Node.js application. For more info view the
-[API docs](https://github.com/timshel/maildev/blob/master/docs/api.md).
-
-```javascript
-const MailDev = require("maildev");
-
-const maildev = new MailDev();
-
-maildev.listen();
-
-maildev.on("new", function (email) {
-  // We got a new email!
-});
-
-// Or using Async
-const mail = await maildev.next("johnny@utah.com");
-
-```
-
-MailDev also has a **REST API**. For more info
-[view the docs](https://github.com/timshel/maildev/blob/master/docs/rest.md).
 
 ## Outgoing email
 

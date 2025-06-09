@@ -1,3 +1,7 @@
+## 3.0.6
+
+- Add `MailBuffer.expect` similar to `next` but with a timeout.
+
 ## 3.0.5
 
 - Update dependencies

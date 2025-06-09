@@ -137,8 +137,8 @@ export class MailServer {
    * Then allow to obtain a `Promise<Mail>` dependant on a predicate `(Mail) => boolean`.
    * Allow to wait for `Mail` independant of their order of arrival.
    */
-  buffer(subject: string): MailBuffer {
-    return new MailBuffer(this, subject);
+  buffer(subject: string, defaultTimeout: number = 10000): MailBuffer {
+    return new MailBuffer(this, subject, defaultTimeout);
   }
 
   constructor(
