@@ -1,4 +1,5 @@
 # MailDev
+[![npm](https://img.shields.io/npm/v/@timshel_npm/maildev)](https://www.npmjs.com/package/@timshel_npm/maildev)
 [![Docker Pulls](https://img.shields.io/docker/pulls/timshel/maildev)](https://hub.docker.com/r/timshel/maildev)
 [![License](https://img.shields.io/npm/l/maildev?color=white)](/LICENSE)
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-black.svg)](https://prettier.io/)
@@ -23,10 +24,15 @@
 
 ## Npm / Yarn
 
-It's not published on `npm` but due to [Github](https://docs.npmjs.com/cli/v10/configuring-npm/package-json#git-urls-as-dependencies) support you can use it with:
+Available on `npm` at [@timshel_npm/maildev](https://www.npmjs.com/package/@timshel_npm/maildev).
+Or can be installed using [Github](https://docs.npmjs.com/cli/v10/configuring-npm/package-json#git-urls-as-dependencies).
 
-```
-"maildev": "timshel/maildev#3.1.0"
+Ex:
+```json
+"devDependencies": {
+    "maildev": "github:timshel/maildev#3.1.2",
+    "maildev": "npm:@timshel_npm/maildev@^3.1.2"
+}
 ```
 
 ## API

@@ -1,3 +1,7 @@
+## 3.1.2
+
+- Fix README dependencies example
+
 ## 3.1.1
 
 - Rename package to `@timshel_npm/maildev` for npm publishing
