@@ -1,3 +1,7 @@
+## 3.1.1
+
+- Rename package to `@timshel_npm/maildev` for npm publishing
+
 ## 3.1.0
 
 - Add `MailBuffer.expect` similar to `next` but with a timeout.

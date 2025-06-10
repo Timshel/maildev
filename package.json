@@ -1,7 +1,7 @@
 {
-  "name": "maildev",
+  "name": "@timshel_npm/maildev",
   "description": "SMTP Server and Web Interface for reading and testing emails during development",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "keywords": [
     "email",
     "e-mail",
@@ -12,29 +12,17 @@
     "development",
     "smtp"
   ],
-  "author": "Dan Farrelly",
-  "homepage": "http://maildev.github.io/maildev/",
+  "author": "Timshel",
+  "homepage": "https://github.com/timshel/maildev",
   "maintainers": [
     {
-      "name": "Dan Farrelly",
-      "email": "daniel.j.farrelly@gmail.com"
-    },
-    {
-      "name": "Dominik Serafin",
-      "email": "DominikSerafin@users.noreply.github.com"
-    },
-    {
-      "name": "LoneRifle",
-      "email": "LoneRifle@users.noreply.github.com"
-    },
-    {
-      "name": "soulteary",
-      "email": "soulteary@gmail.com"
+      "name": "Timshel",
+      "email": "timshel@users.noreply.github.com"
     }
   ],
   "repository": {
     "type": "git",
-    "url": "http://github.com/maildev/maildev.git"
+    "url": "https://github.com/timshel/maildev.git"
   },
   "scripts": {
     "clean": "rm -rf dist coverage tsconfig.tsbuildinfo",
