@@ -1,3 +1,7 @@
+## 3.1.3
+
+- Add socket cors configuration (default is `*`, `MAILDEV_WEB_DOMAIN` to configure)
+
 ## 3.1.2
 
 - Fix README dependencies example
