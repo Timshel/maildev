@@ -1,3 +1,7 @@
+## 3.1.6
+
+- YA Dummy release to test publishing
+
 ## 3.1.5
 
 - Dummy release to test publishing
