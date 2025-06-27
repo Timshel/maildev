@@ -143,6 +143,7 @@ Usage: maildev [options]
 | `--web-ip <ip address>`          | `MAILDEV_WEB_IP`           | IP Address to bind HTTP service to, defaults to --ip                                      |
 | `--web-user <user>`              | `MAILDEV_WEB_USER`         | HTTP user for GUI                                                                         |
 | `--web-pass <password>`          | `MAILDEV_WEB_PASS`         | HTTP password for GUI                                                                     |
+| `--web-domain <domain>`          | `MAILDEV_WEB_DOMAIN`       | External domain name (used for socket CORS, "*" otherwise)                                |
 | `--base-pathname <path>`         | `MAILDEV_BASE_PATHNAME`    | Base path for URLs                                                                        |
 | `--disable-web`                  | `MAILDEV_DISABLE_WEB`      | Disable the use of the web interface. Useful for unit testing                             |
 | `--hide-extensions <extensions>` | `MAILDEV_HIDE_EXTENSIONS`  | Comma separated list of SMTP extensions to NOT advertise (SMTPUTF8, PIPELINING, 8BITMIME) |

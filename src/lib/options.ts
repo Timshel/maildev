@@ -57,6 +57,7 @@ const options = [
   ],
   ["--web-user <user>", "MAILDEV_WEB_USER", "HTTP user for GUI"],
   ["--web-pass <password>", "MAILDEV_WEB_PASS", "HTTP password for GUI"],
+  ["--web-domain <path>", "MAILDEV_WEB_DOMAIN", "External domain name (used for socket CORS, \"*\" otherwise)"],
   ["--base-pathname <path>", "MAILDEV_BASE_PATHNAME", "Base path for URLs"],
   ["--https", "MAILDEV_HTTPS", "Switch from http to https protocol", false],
   ["--https-key <file>", "MAILDEV_HTTPS_KEY", "The file path to the ssl private key"],
@@ -88,6 +89,7 @@ interface CliOptions {
   webIp?: string;
   webUser?: string;
   webPass?: string;
+  webDomain?: string;
   basePathname?: string;
   https?: boolean;
   httpsKey?: string;
@@ -140,6 +142,7 @@ export function cliOptions(): MailDevOptions {
       disabled: false,
       port: config?.web,
       host: config?.webIp,
+      domain: config?.webDomain,
       basePathname: config?.basePathname,
       auth:
         config?.webUser && config?.webPass

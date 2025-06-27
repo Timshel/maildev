@@ -20,6 +20,7 @@ export interface WebOptions {
   port?: number;
   host?: string;
   basePathname?: string;
+  domain?: string;
   auth?: { user: string; pass: string };
   ssl?: { cert: string; key: string };
 }
@@ -58,7 +59,13 @@ export class Web {
       app.use(auth(options?.auth?.user, options?.auth?.pass));
     }
 
-    this.io = socketio({ path: path.posix.join(this.basePathname, "/socket.io") });
+    this.io = socketio({
+      path: path.posix.join(this.basePathname, '/socket.io'),
+      cors: {
+        origin: options?.domain ?? '*',
+        methods: ["GET", "POST"]
+      }
+    });
 
     app.use(this.basePathname, express.static(path.join(__dirname, "../app")));
 
