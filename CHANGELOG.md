@@ -1,3 +1,7 @@
+## 3.1.4
+
+- Dummy update for npmjs
+
 ## 3.1.3
 
 - Add socket cors configuration (default is `*`, `MAILDEV_WEB_DOMAIN` to configure)
