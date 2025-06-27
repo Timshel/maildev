@@ -33,7 +33,7 @@
     "test:debug": "npm run build && nyc _mocha --exit --timeout 5000",
     "lint": "prettier . -c",
     "lint:fix": "prettier . -w",
-    "dev": "node ./scripts/dev.js && npm run css-watch",
+    "dev": "npm run build && node ./scripts/dev.js && npm run css-watch",
     "css": "sass --style=compressed --no-source-map src/app/styles/style.scss:dist/app/styles/style.css",
     "css-watch": "sass --watch --style=compressed --no-source-map src/app/styles/style.scss:dist/app/styles/style.css",
     "docker-build": "./src/scripts/dockerBuild.sh",
