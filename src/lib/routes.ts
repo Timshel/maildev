@@ -18,14 +18,14 @@ export function routes(app, mailserver: MailServer, basePathname: string) {
 
   // Get all emails Enveloppe
   router.get("/envelope", compression(), function (req, res) {
-    res.json(mailserver.getAllEnvelope());
+    res.status(200).json(mailserver.getAllEnvelope());
   });
 
   // Get all emails
   router.get("/email", compression(), function (req, res) {
     mailserver
       .getAllEmail()
-      .then((mails) => res.json(req.query ? filterEmails(mails, req.query) : mails))
+      .then((mails) => res.status(200).json(req.query ? filterEmails(mails, req.query) : mails))
       .catch((err) => res.status(500).json({ error: err.message }));
   });
 
@@ -35,7 +35,7 @@ export function routes(app, mailserver: MailServer, basePathname: string) {
       .getEmail(req.params.id)
       .then((mail) => {
         mail.envelope.isRead = true; // Mark the email as 'read'
-        res.json(mail);
+        res.status(200).json(mail);
       })
       .catch((err) => res.status(404).json({ error: err.message }));
   });
@@ -51,14 +51,14 @@ export function routes(app, mailserver: MailServer, basePathname: string) {
   // Read all emails
   router.patch("/email/read-all", function (req, res) {
     const count = mailserver.readAllEmail();
-    res.json(count);
+    res.status(200).json(count);
   });
 
   // Delete all emails
   router.delete("/email/all", function (req, res) {
     mailserver
       .deleteAllEmail()
-      .then((count) => res.json(count))
+      .then((count) => res.status(200).json(count))
       .catch((err) => res.status(500).json({ error: err.message }));
   });
 
@@ -66,7 +66,7 @@ export function routes(app, mailserver: MailServer, basePathname: string) {
   router.delete("/email/:id", function (req, res) {
     mailserver
       .deleteEmail(req.params.id)
-      .then((deleted) => res.json(deleted))
+      .then((deleted) => res.status(200).json(deleted))
       .catch((err) => res.status(500).json({ error: err.message }));
   });
 
@@ -76,7 +76,7 @@ export function routes(app, mailserver: MailServer, basePathname: string) {
     const baseUrl = req.headers.host + (req.baseUrl || "");
     mailserver
       .getEmailHTML(req.params.id, baseUrl)
-      .then((html) => res.send(html))
+      .then((html) => res.status(200).send(html))
       .catch((err) => res.status(404).json({ error: err.message }));
   });
 
@@ -86,7 +86,7 @@ export function routes(app, mailserver: MailServer, basePathname: string) {
       .getEmailAttachment(req.params.id, req.params.filename)
       .then((attachement) => {
         res.contentType(attachement.contentType);
-        res.send(attachement.content);
+        res.status(200).send(attachement.content);
       })
       .catch((err) => res.status(404).json({ error: err.message }));
   });
@@ -113,7 +113,7 @@ export function routes(app, mailserver: MailServer, basePathname: string) {
 
   // Get any config settings for display
   router.get("/config", function (req, res) {
-    res.json({
+    res.status(200).json({
       version: pkg.version,
       smtpPort: mailserver.port,
       isOutgoingEnabled: mailserver.isOutgoingEnabled(),
@@ -122,7 +122,7 @@ export function routes(app, mailserver: MailServer, basePathname: string) {
   });
 
   // Relay the email
-  router.post("/email/:id/relay/:relayTo?", function (req, res) {
+  router.post("/email/:id/relay{/:relayTo}", function (req, res) {
     mailserver
       .getEmail(req.params.id)
       .then((mail) => {
@@ -139,7 +139,7 @@ export function routes(app, mailserver: MailServer, basePathname: string) {
 
         return mailserver
           .relayMail(mail, false)
-          .then(() => res.json(true))
+          .then(() => res.status(200).json(true))
           .catch((err) => res.status(500).json({ error: err.message }));
       })
       .catch((err) => res.status(404).json({ error: err.message }));
@@ -147,12 +147,12 @@ export function routes(app, mailserver: MailServer, basePathname: string) {
 
   // Health check
   router.get("/healthz", function (req, res) {
-    res.json(true);
+    res.status(200).json(true);
   });
 
   router.get("/reloadMailsFromDirectory", function (req, res) {
     mailserver.loadMailsFromDirectory();
-    res.json(true);
+    res.status(200).json(true);
   });
   app.use(basePathname, router);
 }
