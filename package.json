@@ -66,7 +66,7 @@
     "jsdom": "^26.1.0",
     "mailparser": "^3.7.3",
     "mime": "^3.0.0",
-    "nodemailer": "^6.10.1",
+    "nodemailer": "^7.0.3",
     "smtp-server": "^3.13.8",
     "socket.io": "^4.8.1",
     "wildstring": "1.0.9"
