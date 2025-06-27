@@ -1,7 +1,7 @@
 {
   "name": "@timshel_npm/maildev",
   "description": "SMTP Server with async API and Web Interface for viewing and testing emails during development",
-  "version": "3.1.6",
+  "version": "3.2.0",
   "keywords": [
     "email",
     "e-mail",

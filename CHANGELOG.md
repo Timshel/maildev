@@ -1,3 +1,7 @@
+## 3.2.0
+
+- Upgrade dependencies (express, commander ...)
+
 ## 3.1.6
 
 - YA Dummy release to test publishing
