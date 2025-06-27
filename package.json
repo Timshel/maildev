@@ -58,7 +58,7 @@
     "@types/mailparser": "^3.4.6",
     "addressparser": "1.0.1",
     "async": "^3.2.6",
-    "commander": "^12.1.0",
+    "commander": "^13.1.0",
     "compression": "^1.8.0",
     "cors": "^2.8.5",
     "dompurify": "^3.2.6",
