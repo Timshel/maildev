@@ -1,0 +1,93 @@
+name: build-and-release
+
+on:
+  push:
+    branches: [main]
+    tags: ['*']
+
+jobs:
+  build:
+    name: Build and create a release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          fetch-tags: true
+
+      - name: Install node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Test project
+        run: npm run test
+
+      - name: Set TAG variables
+        id: tags_variables
+        run: |
+          set -x
+
+          TAG_CURRENT=$(git describe --abbrev=0 --tags ${{ github.ref }})
+          echo "TAG_CURRENT=$TAG_CURRENT" >> "$GITHUB_ENV"
+
+          echo "CHANGELOG_MESSAGE<<EOF" >> $GITHUB_ENV
+          sed -nzE "s/^.*## $TAG_CURRENT([^#]*).*$/\1/p" CHANGELOG.md  | sed -e '/./,$!d' -e :a -e '/^\n*$/{$d;N;ba' -e '}' >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.TAG_CURRENT }}
+          release_name: ${{ env.TAG_CURRENT }}
+          body: |
+            ${{ env.CHANGELOG_MESSAGE }}
+
+            :robot: Built by [release.yml](.github/workflows/release.yml) :robot:
+          draft: false
+          prerelease: false
+
+  docker_hub:
+    name: Push Docker image to Docker Hub
+    runs-on: ubuntu-latest
+    environment: main
+    permissions:
+      packages: write
+      contents: read
+      attestations: write
+      id-token: write
+    needs: build
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@902fa8ec7d6ecbf8d84d538b9b233a880e428804 # v5.7.0
+        with:
+          images: timshel/maildev
+
+      - name: Build and push Docker image
+        id: push
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
