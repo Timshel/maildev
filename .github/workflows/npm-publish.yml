@@ -1,7 +1,7 @@
 name: Npm Publish
 on:
   release:
-    types: [published]
+    types: [published. edited]
 jobs:
   publish:
     runs-on: ubuntu-latest
