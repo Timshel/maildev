@@ -1,3 +1,7 @@
+## 3.1.5
+
+- Dummy release to test publishing
+
 ## 3.1.4
 
 - Dummy update for npmjs
