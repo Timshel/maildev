@@ -15,7 +15,7 @@
     "playwright"
   ],
   "author": "Timshel",
-  "homepage": "https://github.com/timshel/maildev",
+  "homepage": "https://github.com/Timshel/maildev",
   "maintainers": [
     {
       "name": "Timshel",
@@ -24,7 +24,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/timshel/maildev.git"
+    "url": "https://github.com/Timshel/maildev"
   },
   "scripts": {
     "clean": "rm -rf dist coverage tsconfig.tsbuildinfo",
