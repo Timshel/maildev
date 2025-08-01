@@ -176,7 +176,7 @@ function relayMail(outgoing: Outgoing, emailObject, emailStream, isAutoRelay, do
         createClient(outgoing);
 
         if (err) {
-          logger.error("Mail Delivery Error: ", err);
+          logger.error("Mail Delivery Error: ", err, { sender, recipients });
           return done(err);
         }
 
