@@ -184,7 +184,7 @@ export function cliOptions(): MailDevOptions {
     hidePIPELINING: (config?.hideExtensions ?? []).includes("PIPELINING"),
     hideSMTPUTF8: (config?.hideExtensions ?? []).includes("SMTPUTF8"),
     outgoing:
-      config?.autoRelay || config?.autoRelayRules
+      (config?.autoRelay || config?.autoRelayRules || config?.outgoingHost)
         ? {
             host: config?.outgoingHost,
             port: config?.outgoingPort,

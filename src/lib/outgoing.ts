@@ -145,7 +145,9 @@ function relayMail(outgoing: Outgoing, emailObject, emailStream, isAutoRelay, do
     emailObject.envelope.to = [{ address: outgoing.autoRelayAddress, args: false }];
   }
 
-  let recipients = emailObject.envelope.to.map(getAddressFromAddressObject);
+  let recipients = emailObject.envelope.to?.length
+    ? emailObject.envelope.to.map(getAddressFromAddressObject)
+    : emailObject.to.map(getAddressFromAddressObject);
   if (isAutoRelay && outgoing.autoRelayRules) {
     recipients = getAutoRelayableRecipients(recipients, outgoing.autoRelayRules);
   }
@@ -161,7 +163,9 @@ function relayMail(outgoing: Outgoing, emailObject, emailStream, isAutoRelay, do
       return done(err);
     }
 
-    const sender = getAddressFromAddressObject(emailObject.envelope.from);
+    let emailFrom = emailObject.envelope.from || emailObject.from;
+    if (Array.isArray(emailFrom)) emailFrom = emailFrom.shift();
+    const sender = getAddressFromAddressObject(emailFrom);
     outgoing.client.send(
       {
         from: sender,
@@ -173,7 +177,7 @@ function relayMail(outgoing: Outgoing, emailObject, emailStream, isAutoRelay, do
         createClient(outgoing);
 
         if (err) {
-          logger.error("Mail Delivery Error: ", err);
+          logger.error("Mail Delivery Error: ", err, { sender, recipients });
           return done(err);
         }
 
