@@ -163,7 +163,8 @@ function relayMail(outgoing: Outgoing, emailObject, emailStream, isAutoRelay, do
       return done(err);
     }
 
-    const emailFrom = emailObject.envelope.from || emailObject.from;
+    let emailFrom = emailObject.envelope.from || emailObject.from;
+    if (Array.isArray(emailFrom)) emailFrom = emailFrom.shift();
     const sender = getAddressFromAddressObject(emailFrom);
     outgoing.client.send(
       {
