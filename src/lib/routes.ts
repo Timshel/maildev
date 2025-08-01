@@ -122,7 +122,7 @@ export function routes(app, mailserver: MailServer, basePathname: string) {
   });
 
   // Relay the email
-  router.post("/email/:id/relay/:relayTo?", function (req, res) {
+  router.post("/email/:id/relay{/:relayTo}", function (req, res) {
     mailserver
       .getEmail(req.params.id)
       .then((mail) => {
