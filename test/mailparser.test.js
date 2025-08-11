@@ -682,7 +682,7 @@ describe("Mailparser plaintext format", () => {
       "Signature\r\n";
 
     mailParser(encodedText).then((mail) => {
-      assert.strictEqual(mail.text, "How are you today?\n-- \nSignature\n");
+      assert.strictEqual(mail.text, "How are you today?\n-- \nSignature");
       done();
     });
   });
@@ -724,7 +724,7 @@ describe("Mailparser plaintext format", () => {
       "Signature\r\n";
 
     mailParser(encodedText).then((mail) => {
-      assert.strictEqual(mail.text, "How are you today?\n-- \nSignature\n");
+      assert.strictEqual(mail.text, "How are you today?\n-- \nSignature");
       done();
     });
   });
