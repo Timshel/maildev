@@ -3,6 +3,7 @@
 /**
  * MailDev - outgoing
  */
+import type { Mail } from "./type";
 const SMTPConnection = require("nodemailer/lib/smtp-connection");
 const async = require("async");
 const fs = require("fs");
@@ -139,10 +140,10 @@ function createClient(outgoing: Outgoing) {
   }
 }
 
-function relayMail(outgoing: Outgoing, emailObject, emailStream, isAutoRelay, done) {
+function relayMail(outgoing: Outgoing, emailObject: Mail, emailStream, isAutoRelay, done) {
   if (isAutoRelay && outgoing.autoRelayAddress) {
-    emailObject.to = [{ address: outgoing.autoRelayAddress }];
-    emailObject.envelope.to = [{ address: outgoing.autoRelayAddress, args: false }];
+    emailObject.to = [{ address: outgoing.autoRelayAddress, name: "Auto-Relay" }];
+    emailObject.envelope.to = [{ address: outgoing.autoRelayAddress, name: "Auto-Relay" }];
   }
 
   let recipients = emailObject.envelope.to.map(getAddressFromAddressObject);
@@ -150,9 +151,12 @@ function relayMail(outgoing: Outgoing, emailObject, emailStream, isAutoRelay, do
     recipients = getAutoRelayableRecipients(recipients, outgoing.autoRelayRules);
   }
 
-  // Fail silently with auth relay mode on
   if (recipients.length === 0) {
     return done("Email had no recipients");
+  }
+
+  if (emailObject.envelope.from.length === 0) {
+    return done("Email had no sender");
   }
 
   const mailSendCallback = function (err) {
@@ -164,7 +168,7 @@ function relayMail(outgoing: Outgoing, emailObject, emailStream, isAutoRelay, do
     const sender = getAddressFromAddressObject(emailObject.envelope.from);
     outgoing.client.send(
       {
-        from: sender,
+        from: emailObject.envelope.from[0].address,
         to: recipients,
       },
       emailStream,
@@ -173,7 +177,7 @@ function relayMail(outgoing: Outgoing, emailObject, emailStream, isAutoRelay, do
         createClient(outgoing);
 
         if (err) {
-          logger.error("Mail Delivery Error: ", err);
+          logger.error("Mail Delivery Error: ", err, { sender, recipients });
           return done(err);
         }
 

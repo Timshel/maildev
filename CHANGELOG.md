@@ -1,6 +1,8 @@
 ## 3.2.1
 
 - Upgrade dependencies
+- Activate Outgoing if `outgoingHost` is set.
+- Fix relay sender
 
 ## 3.2.0
 
