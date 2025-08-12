@@ -263,8 +263,9 @@ export class MailServer {
     const envelope = this.store.find(function (elt) {
       return elt.id === id;
     });
+
     if (envelope) {
-      return getDiskEmail(this.mailDir, envelope.id, envelope).then((mail) => {
+      return getDiskEmail(this.mailDir, envelope.id).then((mail) => {
         if (mail.html) {
           // sanitize html
           const window = new JSDOM("").window;
@@ -433,7 +434,7 @@ export class MailServer {
     this.store.length = 0;
     const saved = files.map(async function (file) {
       const id = path.parse(file).name;
-      const email = await getDiskEmail(self.mailDir, id, undefined);
+      const email = await getDiskEmail(self.mailDir, id);
       return saveEmailToStore(self, email);
     });
 
@@ -461,37 +462,26 @@ function createMailDir(mailDir: string) {
   logger.info("MailDev using directory %s", mailDir);
 }
 
-async function getDiskEmail(
-  mailDir: string,
-  id: string,
-  envelope: Envelope | undefined,
-): Promise<Mail> {
+async function getDiskEmail(mailDir: string, id: string): Promise<Mail> {
   const emlPath = path.join(mailDir, id + ".eml");
   const data = await pfs.readFile(emlPath, "utf8");
   const parsedMail = await mailParser(data);
-
-  if (envelope === undefined) {
-    envelope = {
-      id: id,
-      from: parsedMail.from,
-      to: parsedMail.to,
-      date: parsedMail.date,
-      subject: parsedMail.subject,
-      hasAttachment: parsedMail.attachments.length > 0,
-      isRead: false,
-    };
-  }
-
-  return buildMail(mailDir, envelope, parsedMail);
+  return buildMail(mailDir, id, parsedMail);
 }
 
-async function buildMail(
-  mailDir: string,
-  envelope: Envelope,
-  parsedMail: ParsedMail,
-): Promise<Mail> {
-  const emlPath = path.join(mailDir, envelope.id + ".eml");
+async function buildMail(mailDir: string, id: string, parsedMail: ParsedMail): Promise<Mail> {
+  const emlPath = path.join(mailDir, id + ".eml");
   const stat = await pfs.stat(emlPath);
+
+  const envelope = {
+    id: id,
+    from: parsedMail.from,
+    to: parsedMail.to,
+    date: parsedMail.date,
+    subject: parsedMail.subject,
+    hasAttachment: parsedMail.attachments.length > 0,
+    isRead: false,
+  };
 
   return {
     id: envelope.id,
@@ -545,17 +535,6 @@ async function handleDataStream(mailServer: MailServer, stream, session, callbac
 
   stream.pipe(emlStream);
   const parsed = await mailParser(stream);
-
-  const envelope = {
-    id: id,
-    from: session.envelope.mailFrom,
-    to: session.envelope.rcptTo,
-    date: parsed.date,
-    subject: parsed.subject,
-    hasAttachment: parsed.attachments.length > 0,
-    isRead: false,
-  };
-
-  const mail = await buildMail(mailServer.mailDir, envelope, parsed);
+  const mail = await buildMail(mailServer.mailDir, id, parsed);
   return saveEmailToStore(mailServer, mail);
 }
