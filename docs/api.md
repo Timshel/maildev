@@ -161,8 +161,12 @@ The `close` and `delete` event subjects are reserved and cannot be used to wait 
 Use an internal array to store received email even when not consumming. Don't forget to use `.return()` to close it.
 
 **buffer(subject, defaultTimeout: number = 10000): MailBuffer** - Return a struct which store received emails (Timeout is used when calling `expect`).
--**MailBuffer.next( (Mail) => boolean, consume: boolean = true)** allows to wait for a specific `Mail` independant of the order of arrival.
--**MailBuffer.expect( (Mail) => boolean, consume: boolean = true, timeout?: number)** is similar but will timeout
+
+**MailBuffer.find( (Mail) => boolean, consume: boolean): Mail | undefined** - Search through the mails currently in the buffer.
+
+**MailBuffer.next( (Mail) => boolean, consume: boolean = true): Promise<Mail>** - Allows to wait for a specific `Mail` independant of the order of arrival.
+
+**MailBuffer.expect( (Mail) => boolean, consume: boolean = true, timeout?: number): Promise<Mail>** - Similar but will timeout, if no timeout is provided will use the value defined when creating the `Buffer`.
 
 ### Callbacks
 
