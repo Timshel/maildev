@@ -1,3 +1,8 @@
+## 3.2.2
+
+- Switch to use strict version in dependencies (Will update later on).
+- Use `npm ci` in Dockerfile
+
 ## 3.2.1
 
 - Upgrade dependencies
