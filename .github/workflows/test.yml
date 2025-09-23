@@ -10,7 +10,7 @@ jobs:
     strategy:
       matrix:
         # Node LTS https://nodejs.org/en/about/releases/
-        node-version: [18.x, 20.X, 22.X, 24.X]
+        node-version: [20.X, 22.X, 24.X]
     steps:
       - uses: actions/checkout@v4
       - name: Use Node.js ${{matrix.node-version}}

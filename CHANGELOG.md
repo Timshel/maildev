@@ -1,3 +1,8 @@
+## 3.2.3
+
+- Upgrade dependencies
+- Drop node 18
+
 ## 3.2.2
 
 - Switch to use strict version in dependencies (Will update later on).

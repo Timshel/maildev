@@ -12,7 +12,7 @@ WORKDIR /root
 COPY . .
 RUN npm install typescript -g \
   && npm install sass -g \
-  && npm ci \
+  && npm ci --ignore-scripts \
   && npm prune \
   && npm cache clean --force \
   && npm run build

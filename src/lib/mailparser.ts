@@ -1,4 +1,5 @@
 import type * as MailParser from "mailparser";
+import mime from "mime";
 import type {
   AddressObject,
   EmailAddress,
@@ -8,7 +9,6 @@ import type {
   StructuredHeader,
 } from "./type";
 
-const mime = require("mime");
 const simpleParser = require("mailparser").simpleParser;
 const strtotime = require("./helpers/strtotime");
 const logger = require("./logger");
