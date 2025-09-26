@@ -1,5 +1,5 @@
 # Base
-FROM node:18-alpine AS base
+FROM node:20-alpine AS base
 
 ENV NODE_ENV=production
 ENV MAILDEV_WEB_PORT=1080
