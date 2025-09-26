@@ -1,3 +1,7 @@
+## 3.2.4
+
+- Fix docker image (upgrade to node 20).
+
 ## 3.2.3
 
 - Upgrade dependencies
