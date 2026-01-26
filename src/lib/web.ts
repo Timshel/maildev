@@ -5,6 +5,7 @@
  */
 import { MailServer } from "./mailserver";
 import { routes } from "./routes";
+import { auth } from "./auth";
 
 const express = require("express");
 const cors = require("cors");
@@ -12,7 +13,6 @@ const fs = require("fs");
 const http = require("http");
 const https = require("https");
 const socketio = require("socket.io");
-const auth = require("./auth");
 const logger = require("./logger");
 const path = require("path");
 
