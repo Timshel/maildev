@@ -4,10 +4,11 @@
  * MailDev - outgoing
  */
 import type { Mail } from "./type";
+import * as logger from "./logger";
+
 const SMTPConnection = require("nodemailer/lib/smtp-connection");
 const async = require("async");
 const fs = require("fs");
-const logger = require("./logger");
 const wildstring = require("wildstring");
 
 export interface OutgoingOptions {

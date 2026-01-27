@@ -6,34 +6,34 @@
 
 let logLevel = 1;
 
-module.exports = {};
-
-/**
- * Initialize the logger
- */
-
-module.exports.setLevel = function (level) {
+export function setLevel(level) {
   logLevel = level;
-};
+}
 
 /**
- * The info method will always log to the console
+ * The error method will always log to the console
  */
+export function error() {
+  console.error.apply(console, arguments);
+}
 
-module.exports.info = function () {
+/**
+ * Log only when set to verbose (2)
+ */
+export function log() {
+  if (logLevel > 1) {
+    console.log.apply(console, arguments);
+  }
+}
+
+export function info() {
   if (logLevel > 0) {
     console.info.apply(console, arguments);
   }
-};
+}
 
-/**
- * Extend the basic console.x functions, checking if the logging is on
- */
-
-["log", "dir", "warn", "error"].forEach(function (fn) {
-  module.exports[fn] = function () {
-    if (logLevel > 1) {
-      console[fn].apply(console, arguments);
-    }
-  };
-});
+export function warn() {
+  if (logLevel > 0) {
+    console.warn.apply(console, arguments);
+  }
+}

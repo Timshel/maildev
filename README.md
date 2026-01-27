@@ -148,9 +148,9 @@ Usage: maildev [options]
 | `--disable-web`                  | `MAILDEV_DISABLE_WEB`      | Disable the use of the web interface. Useful for unit testing                             |
 | `--hide-extensions <extensions>` | `MAILDEV_HIDE_EXTENSIONS`  | Comma separated list of SMTP extensions to NOT advertise (SMTPUTF8, PIPELINING, 8BITMIME) |
 | `-o, --open`                     |                            | Open the Web GUI after startup                                                            |
-| `-v, --verbose`                  |                            |                                                                                           |
-| `--silent`                       |                            |                                                                                           |
-| `--log-mail-contents`            |                            | Log a JSON representation of each incoming mail                                           |
+| `-v, --verbose`                  | `MAILDEV_VERBOSE`          | Display log level message                                                                 |
+| `--silent`                       | `MAILDEV_SILENT`           | Display only error level message (ignored if `verbose` is active)                         |
+| `--log-mail-contents`            | `MAILDEV_LOG_CONTENT`      | Log a JSON representation of each incoming mail                                           |
 
 
 ## Outgoing email

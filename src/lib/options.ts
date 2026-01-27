@@ -4,18 +4,41 @@ const program = require("commander").program;
 const pkg = require("../../package.json");
 const fs = require("fs");
 
+/*
+ * Converts a string to a bool.
+ *  - match 'true', 'on', or '1' as true.
+ *  - ignore all white-space padding
+ *  - ignore capitalization (case).
+ */
+function parseBoolean(s): boolean {
+  let regex = /^\s*(true|1|on)\s*$/i;
+  return regex.test(s);
+}
+
 const options = [
   // General config
-  ["-v, --verbose"],
-  ["--silent"],
-  ["--log-mail-contents", "Log a JSON representation of each incoming email"],
+  ["-v, --verbose", "MAILDEV_VERBOSE", "Display log level message", false, parseBoolean],
+  ["--silent", "MAILDEV_SILENT", "Display only error level message", false, parseBoolean],
+  [
+    "--log-mail-contents",
+    "MAILDEV_LOG_CONTENT",
+    "Log a JSON representation of each incoming email",
+    false,
+    parseBoolean,
+  ],
   // SMTP server parameters
-  ["-s, --smtp <port>", "MAILDEV_SMTP_PORT", "SMTP port to catch emails", 1025, (x) => parseInt(x)],
+  ["-s, --smtp <port>", "MAILDEV_SMTP_PORT", "SMTP port to catch emails", 1025, parseInt],
   ["--ip <ip address>", "MAILDEV_IP", "IP Address to bind SMTP service to", "0.0.0.0"],
   ["--mail-directory <path>", "MAILDEV_MAIL_DIRECTORY", "Directory for persisting mails"],
   ["--incoming-user <user>", "MAILDEV_INCOMING_USER", "SMTP user for incoming emails"],
   ["--incoming-pass <pass>", "MAILDEV_INCOMING_PASS", "SMTP password for incoming emails"],
-  ["--incoming-secure", "MAILDEV_INCOMING_SECURE", "Use SMTP SSL for incoming emails", false],
+  [
+    "--incoming-secure",
+    "MAILDEV_INCOMING_SECURE",
+    "Use SMTP SSL for incoming emails",
+    false,
+    parseBoolean,
+  ],
   ["--incoming-cert <path>", "MAILDEV_INCOMING_CERT", "Cert file location for incoming SSL"],
   ["--incoming-key <path>", "MAILDEV_INCOMING_KEY", "Key file location for incoming SSL"],
   [
@@ -32,15 +55,16 @@ const options = [
     "Use auto-relay mode. Optional relay email address",
   ],
   ["--outgoing-host <host>", "MAILDEV_OUTGOING_HOST", "SMTP host for outgoing emails"],
-  [
-    "--outgoing-port <port>",
-    "MAILDEV_OUTGOING_PORT",
-    "SMTP port for outgoing emails",
-    (x) => parseInt(x),
-  ],
+  ["--outgoing-port <port>", "MAILDEV_OUTGOING_PORT", "SMTP port for outgoing emails", parseInt],
   ["--outgoing-user <user>", "MAILDEV_OUTGOING_USER", "SMTP user for outgoing emails"],
   ["--outgoing-pass <password>", "MAILDEV_OUTGOING_PASS", "SMTP password for outgoing emails"],
-  ["--outgoing-secure", "MAILDEV_OUTGOING_SECURE", "Use SMTP SSL for outgoing emails", false],
+  [
+    "--outgoing-secure",
+    "MAILDEV_OUTGOING_SECURE",
+    "Use SMTP SSL for outgoing emails",
+    false,
+    parseBoolean,
+  ],
   ["--auto-relay-rules <file>", "MAILDEV_AUTO_RELAY_RULES", "Filter rules for auto relay mode"],
   // Web app config
   [
@@ -48,8 +72,9 @@ const options = [
     "MAILDEV_DISABLE_WEB",
     "Disable the use of the web interface. Useful for unit testing",
     false,
+    parseBoolean,
   ],
-  ["-w, --web <port>", "MAILDEV_WEB_PORT", "Port to run the Web GUI", 1080, (x) => parseInt(x)],
+  ["-w, --web <port>", "MAILDEV_WEB_PORT", "Port to run the Web GUI", 1080, parseInt],
   [
     "--web-ip <ip address>",
     "MAILDEV_WEB_IP",
@@ -63,7 +88,7 @@ const options = [
     'External domain name (used for socket CORS, "*" otherwise)',
   ],
   ["--base-pathname <path>", "MAILDEV_BASE_PATHNAME", "Base path for URLs"],
-  ["--https", "MAILDEV_HTTPS", "Switch from http to https protocol", false],
+  ["--https", "MAILDEV_HTTPS", "Switch from http to https protocol", false, parseBoolean],
   ["--https-key <file>", "MAILDEV_HTTPS_KEY", "The file path to the ssl private key"],
   ["--https-cert <file>", "MAILDEV_HTTPS_CERT", "The file path to the ssl cert file"],
 ];
@@ -103,12 +128,19 @@ interface CliOptions {
 export function appendOptions(program, options) {
   return options.reduce(function (chain, option) {
     const flag = option[0] as string;
-    const envVariable = typeof option[1] === "string" ? option[1] : undefined;
-    const description = typeof option[2] === "string" ? option[2] : undefined;
-    const defaultValue = envVariable ? (process.env[envVariable] ?? option[3]) : option[3];
+    const envVariable = option[1];
+    const description = option[2];
     const fn = option[4];
 
-    return fn
+    const defaultValue = envVariable
+      ? process.env[envVariable]
+        ? fn
+          ? fn(process.env[envVariable])
+          : process.env[envVariable]
+        : option[3]
+      : option[3];
+
+    return fn && fn != parseBoolean
       ? chain.option(flag, description, fn, defaultValue)
       : chain.option(flag, description, defaultValue);
   }, program);

@@ -12,6 +12,8 @@ import { createOnAuthCallback } from "./helpers/smtp";
 import { MailBuffer } from "./mailbuffer";
 import { parse as mailParser } from "./mailparser";
 import { Outgoing } from "./outgoing";
+import * as logger from "./logger";
+
 import { SMTPServer } from "smtp-server";
 import { promises as pfs } from "fs";
 
@@ -20,7 +22,6 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const utils = require("./utils");
-const logger = require("./logger");
 const createDOMPurify = require("dompurify");
 const { JSDOM } = require("jsdom");
 

@@ -9,8 +9,7 @@ import type { WebOptions } from "./lib/web";
 
 import { MailServer } from "./lib/mailserver";
 import { Web } from "./lib/web";
-
-const logger = require("./lib/logger");
+import * as logger from "./lib/logger";
 
 export interface MailDevOptions extends MailServerOptions {
   verbose?: boolean;

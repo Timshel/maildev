@@ -6,6 +6,7 @@
 import { MailServer } from "./mailserver";
 import { routes } from "./routes";
 import { auth } from "./auth";
+import * as logger from "./logger";
 
 const express = require("express");
 const cors = require("cors");
@@ -13,7 +14,6 @@ const fs = require("fs");
 const http = require("http");
 const https = require("https");
 const socketio = require("socket.io");
-const logger = require("./logger");
 const path = require("path");
 
 export interface WebOptions {
