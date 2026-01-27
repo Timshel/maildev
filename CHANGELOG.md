@@ -1,3 +1,10 @@
+## 3.2.8
+
+- Upgrade dependencies
+- Fix basic auth (https://github.com/Timshel/maildev/pull/9)
+- Fix boolean env variable parsing
+- Make logger `silent` and `verbose` more coherent
+
 ## 3.2.7
 
 - Upgrade dependencies
