@@ -1,6 +1,7 @@
 "use strict";
 
 import { MailServer } from "./mailserver";
+import { filterEmails } from "./utils";
 
 /**
  * MailDev - routes
@@ -8,7 +9,6 @@ import { MailServer } from "./mailserver";
 const express = require("express");
 const compression = require("compression");
 const pkg = require("../../package.json");
-const { filterEmails } = require("./utils");
 
 const emailRegexp =
   /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;

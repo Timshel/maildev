@@ -1369,7 +1369,7 @@ const resultProto = {
   },
 };
 
-module.exports = function strtotime(str, now) {
+export function strtotime(str, now) {
   //       discuss at: https://locutus.io/php/strtotime/
   //      original by: Caio Ariede (https://caioariede.com)
   //      improved by: Kevin van Zonneveld (https://kvz.io)
@@ -1501,4 +1501,4 @@ module.exports = function strtotime(str, now) {
   }
 
   return Math.floor(result.toDate(new Date(now * 1000)) / 1000);
-};
+}

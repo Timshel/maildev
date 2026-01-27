@@ -13,6 +13,7 @@ import { MailBuffer } from "./mailbuffer";
 import { parse as mailParser } from "./mailparser";
 import { Outgoing } from "./outgoing";
 import * as logger from "./logger";
+import * as utils from "./utils";
 
 import { SMTPServer } from "smtp-server";
 import { promises as pfs } from "fs";
@@ -21,7 +22,6 @@ const events = require("events");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
-const utils = require("./utils");
 const createDOMPurify = require("dompurify");
 const { JSDOM } = require("jsdom");
 

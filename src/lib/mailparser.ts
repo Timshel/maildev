@@ -9,10 +9,10 @@ import type {
   StructuredHeader,
 } from "./type";
 
+import { strtotime } from "./helpers/strtotime";
 import * as logger from "./logger";
 
 const simpleParser = require("mailparser").simpleParser;
-const strtotime = require("./helpers/strtotime");
 
 export async function parse(input): Promise<ParsedMail> {
   return simpleParser(input, {}).then((parsed: MailParser.ParsedMail) => {

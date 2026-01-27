@@ -1,5 +1,7 @@
 "use strict";
 
+import type { Mail } from "./type";
+
 // Create an unique id, length 8 characters
 export function makeId(): string {
   let text = "";
@@ -39,7 +41,7 @@ function lookup(obj, path) {
   }
 }
 
-export function filterEmails(emails: string[], query): string[] {
+export function filterEmails(emails: Mail[], query): Mail[] {
   return emails.filter((email) => {
     const hits: boolean[] = [];
     for (const key in query) {
