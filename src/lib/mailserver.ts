@@ -56,6 +56,8 @@ export class MailServer {
   smtp: typeof SMTPServer;
   outgoing: Outgoing | undefined;
 
+  private _reloadInProgress: Promise<void> | undefined = undefined;
+
   /**
    * Extend Event Emitter methods
    * events:
@@ -424,7 +426,18 @@ export class MailServer {
     return ["message/rfc822", filename, stream];
   }
 
-  async loadMailsFromDirectory(): Promise<void[]> {
+  async loadMailsFromDirectory(): Promise<void> {
+    if (this._reloadInProgress == undefined) {
+      this._reloadInProgress = this._loadMailsFromDirectory().finally(() => {
+        this._reloadInProgress = undefined;
+      });
+      return this._reloadInProgress;
+    } else {
+      return this._reloadInProgress;
+    }
+  }
+
+  private async _loadMailsFromDirectory(): Promise<void> {
     const self = this;
     const persistencePath = await pfs.realpath(this.mailDir);
     const files = await pfs.readdir(persistencePath).catch((err) => {
@@ -433,13 +446,20 @@ export class MailServer {
     });
 
     this.store.length = 0;
-    const saved = files.map(async function (file) {
-      const id = path.parse(file).name;
-      const email = await getDiskEmail(self.mailDir, id);
-      return saveEmailToStore(self, email);
-    });
+    this.eventEmitter.emit("delete", { id: "all" });
 
-    return Promise.all(saved);
+    const concurrency = 20;
+    for (let i = 0; i < files.length; i += concurrency) {
+      const chunk = files.slice(i, i + concurrency);
+
+      let saved = chunk.map(async function (file) {
+        const id = path.parse(file).name;
+        const email = await getDiskEmail(self.mailDir, id);
+        return saveEmailToStore(self, email);
+      });
+
+      await Promise.all(saved);
+    }
   }
 }
 
