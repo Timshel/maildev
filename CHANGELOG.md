@@ -1,3 +1,11 @@
+## 3.2.9
+
+- Thx to @mazzz1y for mail loading improvements
+- Correctly await in `reloadMailsFromDirectory` and debounce it
+- When reloading mail
+  - emit a delete all event
+  - chunk the concurrent email loading
+
 ## 3.2.8
 
 - Upgrade dependencies
