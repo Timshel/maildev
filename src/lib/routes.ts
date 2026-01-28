@@ -150,8 +150,8 @@ export function routes(app, mailserver: MailServer, basePathname: string) {
     res.status(200).json(true);
   });
 
-  router.get("/reloadMailsFromDirectory", function (req, res) {
-    mailserver.loadMailsFromDirectory();
+  router.get("/reloadMailsFromDirectory", async function (req, res) {
+    await mailserver.loadMailsFromDirectory();
     res.status(200).json(true);
   });
   app.use(basePathname, router);

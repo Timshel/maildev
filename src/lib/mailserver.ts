@@ -52,6 +52,7 @@ export class MailServer {
   store: Envelope[] = [];
   eventEmitter = new events.EventEmitter();
   mailEventSubjectMapper: (Mail) => string | undefined;
+  isReloading = false;
 
   smtp: typeof SMTPServer;
   outgoing: Outgoing | undefined;
@@ -175,17 +176,22 @@ export class MailServer {
     if (options?.outgoing) {
       this.outgoing = new Outgoing(options?.outgoing);
     }
-
-    if (options?.mailDir) {
-      this.loadMailsFromDirectory();
-    }
   }
 
   /**
    * Start the mailServer
    */
-  listen(): Promise<void> {
+  async listen(): Promise<void> {
     const self = this;
+
+    if (this.mailDir) {
+      try {
+        await this.loadMailsFromDirectory();
+      } catch (err) {
+        logger.error("Failed to load emails from directory:", err);
+      }
+    }
+
     return new Promise((resolve, reject) => {
       self.smtp.listen(self.port, self.host, (err) => {
         if (err) {
@@ -424,22 +430,46 @@ export class MailServer {
     return ["message/rfc822", filename, stream];
   }
 
-  async loadMailsFromDirectory(): Promise<void[]> {
-    const self = this;
-    const persistencePath = await pfs.realpath(this.mailDir);
-    const files = await pfs.readdir(persistencePath).catch((err) => {
-      logger.error(`Error during reading of the mailDir ${persistencePath}`);
-      throw new Error(`Error during reading of the mailDir ${persistencePath}`);
-    });
+  async loadMailsFromDirectory(): Promise<void> {
+    if (this.isReloading) {
+      return;
+    }
 
-    this.store.length = 0;
-    const saved = files.map(async function (file) {
-      const id = path.parse(file).name;
-      const email = await getDiskEmail(self.mailDir, id);
-      return saveEmailToStore(self, email);
-    });
+    this.isReloading = true;
+    try {
+      const persistencePath = await pfs.realpath(this.mailDir);
+      const files = await pfs.readdir(persistencePath).catch((err) => {
+        logger.error(`Error during reading of the mailDir ${persistencePath}`);
+        throw new Error(`Error during reading of the mailDir ${persistencePath}`);
+      });
 
-    return Promise.all(saved);
+      const diskIds = new Set(
+        files.filter((file) => file.endsWith(".eml")).map((file) => path.parse(file).name),
+      );
+      const storeIds = new Set(this.store.map((env) => env.id));
+
+      for (let i = this.store.length - 1; i >= 0; i--) {
+        if (!diskIds.has(this.store[i].id)) {
+          const id = this.store[i].id;
+          this.store.splice(i, 1);
+          this.eventEmitter.emit("delete", { id, index: i });
+        }
+      }
+
+      const CONCURRENCY = 20;
+      const idsToAdd = [...diskIds].filter((id) => !storeIds.has(id));
+
+      for (let i = 0; i < idsToAdd.length; i += CONCURRENCY) {
+        await Promise.all(
+          idsToAdd.slice(i, i + CONCURRENCY).map(async (id) => {
+            const email = await getDiskEmail(this.mailDir, id);
+            return saveEmailToStore(this, email);
+          }),
+        );
+      }
+    } finally {
+      this.isReloading = false;
+    }
   }
 }
 
