@@ -33,7 +33,6 @@ html,
 body {
     height: 100%;
     width: 100%;
-    overflow: hidden;
 }
 
 body {
@@ -93,14 +92,13 @@ body.dark-theme {
     flex-flow: row nowrap;
     height: 100%;
     width: 100%;
-    overflow: hidden;
 }
 
 
 
 .main-container {
     @include mixins.flex(1 70%);
-    overflow-y: hidden;
+    overflow: hidden;
 }
 
 
@@ -325,7 +323,6 @@ body.dark-theme {
     box-sizing: border-box;
     height: calc(100% - #{1 * $toolbarHeight});
     overflow-x: hidden;
-    overflow-y: hidden;
     border-right: 1px solid color.adjust(white, $lightness: -10%);
     body.dark-theme & {
         border-right-color: color.adjust($brand, $lightness: -32%);
@@ -585,12 +582,6 @@ body.dark-theme {
 }
 
 
-
-
-
-
-
-
 .main-content {
     margin: 1.5em 2em;
     color: black;
@@ -610,21 +601,17 @@ body.dark-theme {
     }
 }
 
-
-
-
 .email-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .email-content {
     box-sizing: border-box;
     z-index: 1;
-    height: calc(100vh - #{$toolbarHeight});
-    //border-top: 1px solid darken(white,10);
-}
-
-.email-content-view {
-    height: 100%;
+    flex: 1;
+    overflow: auto;
 }
 
 .email-content-view-html {
@@ -648,7 +635,6 @@ body.dark-theme {
     margin: 0;
     width: 100%;
     max-width: 100%;
-    height: 100%;
     position: relative; // set position for resize rendering issue
     //border: 1px solid darken(white,10);
     background: color.adjust(white,$lightness: -0%);

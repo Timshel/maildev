@@ -262,7 +262,7 @@
 <div class="email-content">
 
     <div class="email-content-view email-content-view-html" ng-hide="panelVisibility != 'html'">
-      <iframe ng-src="{{ item.iframeUrl }}" class="preview-iframe panel-html"></iframe>
+      <iframe ng-src="{{ item.iframeUrl }}" class="preview-iframe panel-html" scrolling="no"></iframe>
     </div>
 
     <div class="email-content-view email-content-view-plain" ng-hide="panelVisibility != 'plain'">
@@ -304,7 +304,7 @@
     </div>
 
     <div class="email-content-view email-content-view-source" ng-hide="panelVisibility != 'source'">
-      <iframe ng-src="{{ rawEmail }}" class="preview-iframe panel-source" ></iframe>
+      <iframe ng-src="{{ rawEmail }}" class="preview-iframe panel-source" scrolling="no"></iframe>
     </div>
 
 </div>

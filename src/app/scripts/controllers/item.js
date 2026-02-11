@@ -56,20 +56,17 @@ app.controller("ItemCtrl", [
 
         if (head) head.appendChild(baseEl);
 
-        replaceMediaQueries(iframe);
         fixIframeHeight(iframe);
-
         addHideDropdownHandler(iframe.contentDocument.getElementsByTagName("body")[0]);
+
+        replaceMediaQueries(iframe);
       }, 500);
     };
 
     // Updates the iframe height so it matches it's content
     // This prevents the iframe from having scrollbars
     const fixIframeHeight = function (iframe) {
-      const body = iframe.contentDocument.getElementsByTagName("body")[0];
-      const newHeight = body.scrollHeight;
-
-      iframe.height = newHeight;
+      iframe.style.height = iframe.contentWindow.document.body.scrollHeight + "px";
     };
 
     // Updates all media query rules to use 'width' instead of device width
