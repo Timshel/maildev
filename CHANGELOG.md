@@ -1,3 +1,8 @@
+## 3.2.10
+
+- Fix content scroll
+- Upgrade dependencies
+
 ## 3.2.9
 
 - Thx to @mazzz1y for mail loading improvements
