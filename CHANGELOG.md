@@ -1,3 +1,11 @@
+## 3.2.12
+
+- Empty release just to have a clean run for both Npmjs and Docker
+
+## 3.2.11
+
+- Release with new npmjs flow
+
 ## 3.2.10
 
 - Fix content scroll
