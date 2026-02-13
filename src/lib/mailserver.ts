@@ -17,6 +17,7 @@ import * as utils from "./utils";
 
 import { SMTPServer } from "smtp-server";
 import { promises as pfs } from "fs";
+import { pipeline } from "stream/promises";
 
 const events = require("events");
 const fs = require("fs");
@@ -547,15 +548,16 @@ async function saveEmailToStore(mailServer: MailServer, mail: Mail): Promise<voi
  */
 async function handleDataStream(mailServer: MailServer, stream, session, callback): Promise<void> {
   const id = utils.makeId();
-  const emlStream = fs.createWriteStream(path.join(mailServer.mailDir, id + ".eml"));
+  const emlPath = path.join(mailServer.mailDir, id + ".eml");
 
-  stream.on("end", function () {
-    emlStream.end();
+  try {
+    await pipeline(stream, fs.createWriteStream(emlPath));
+    const mail = await getDiskEmail(mailServer.mailDir, id);
+    await saveEmailToStore(mailServer, mail);
     callback(null, "Message queued as " + id);
-  });
-
-  stream.pipe(emlStream);
-  const parsed = await mailParser(stream);
-  const mail = await buildMail(mailServer.mailDir, id, parsed);
-  return saveEmailToStore(mailServer, mail);
+  } catch (err) {
+    pfs.unlink(emlPath).catch(() => {});
+    logger.error("Failed to process incoming email %s: %s", id, err);
+    callback(err);
+  }
 }
