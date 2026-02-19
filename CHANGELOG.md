@@ -1,3 +1,7 @@
+## 3.2.14
+
+- Remove `--omit=dev` from release
+
 ## 3.2.13
 
 - Fix parallel consumption (parsing and writing) when receiving an email
