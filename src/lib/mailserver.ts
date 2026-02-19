@@ -22,6 +22,7 @@ const events = require("events");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
+const { PassThrough } = require("stream");
 const createDOMPurify = require("dompurify");
 const { JSDOM } = require("jsdom");
 
@@ -549,13 +550,17 @@ async function handleDataStream(mailServer: MailServer, stream, session, callbac
   const id = utils.makeId();
   const emlStream = fs.createWriteStream(path.join(mailServer.mailDir, id + ".eml"));
 
-  stream.on("end", function () {
+  const pt = new PassThrough();
+  pt.on("data", (data) => {
+    emlStream.write(data);
+  });
+
+  stream.on("end", () => {
     emlStream.end();
     callback(null, "Message queued as " + id);
   });
 
-  stream.pipe(emlStream);
-  const parsed = await mailParser(stream);
+  const parsed = await mailParser(stream.pipe(pt));
   const mail = await buildMail(mailServer.mailDir, id, parsed);
   return saveEmailToStore(mailServer, mail);
 }
