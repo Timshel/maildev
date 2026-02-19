@@ -1,6 +1,12 @@
+## 3.2.13
+
+- Fix parallel consumption (parsing and writing) when receiving an email
+- Updgrade dependencies
+- Add `--omit=dev --ignore-scripts` to `npm ci` when applicable
+
 ## 3.2.12
 
-- Empty release just to have a clean run for both Npmjs and Docker
+- User Node 24 when building release for both Npmjs and Docker
 
 ## 3.2.11
 
