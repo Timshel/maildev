@@ -9,7 +9,7 @@ const assert = require("assert");
 const SMTPConnection = require("nodemailer/lib/smtp-connection");
 const MailServer = require("../dist/lib/mailserver").MailServer;
 const nodemailer = require("nodemailer");
-const port = 9025;
+const port = 9028;
 
 async function createTransporter(port, auth) {
   return nodemailer.createTransport({
@@ -91,7 +91,7 @@ describe("mailserver", () => {
       });
     });
 
-    it("should authenticate", function (done) {
+    it("should authenticate", async () => {
       const connection = new SMTPConnection({
         port: mailServer.port,
         host: mailServer.host,
@@ -100,34 +100,40 @@ describe("mailserver", () => {
         },
       });
 
-      connection.connect(function (err) {
-        if (err) return done(err);
+      const mail = await new Promise((resolve, reject) => {
+        mailServer.once("new", function (mail) {
+          resolve(mail);
+        });
+        connection.connect(function (err) {
+          if (err) return reject(err);
 
-        connection.login(
-          {
-            user: "bodhi",
-            pass: "surfing",
-          },
-          function (err) {
-            assert.strictEqual(err, null, "Login should not return error");
+          connection.login(
+            {
+              user: "bodhi",
+              pass: "surfing",
+            },
+            function (err) {
+              assert.strictEqual(err, null, "Login should not return error");
 
-            const envelope = {
-              from: "angelo.pappas@fbi.gov",
-              to: "johnny.utah@fbi.gov",
-            };
+              const envelope = {
+                from: "angelo.pappas@fbi.gov",
+                to: "johnny.utah@fbi.gov",
+              };
 
-            connection.send(envelope, "They are surfers.", function (err, info) {
-              if (err) return done(err);
-              assert.notStrictEqual(typeof info, "undefined");
-              assert.strictEqual(info.accepted.length, 1);
-              assert.strictEqual(info.rejected.length, 0);
+              connection.send(envelope, "They are surfers.", function (err, info) {
+                if (err) return reject(err);
+                assert.notStrictEqual(typeof info, "undefined");
+                assert.strictEqual(info.accepted.length, 1);
+                assert.strictEqual(info.rejected.length, 0);
 
-              connection.close();
-              done();
-            });
-          },
-        );
+                connection.close();
+              });
+            },
+          );
+        });
       });
+
+      assert.ok(mail);
     });
   });
 

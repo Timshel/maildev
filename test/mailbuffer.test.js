@@ -9,7 +9,7 @@ const assert = require("assert");
 const SMTPConnection = require("nodemailer/lib/smtp-connection");
 const MailServer = require("../dist/lib/mailserver").MailServer;
 const nodemailer = require("nodemailer");
-const port = 9025;
+const port = 9027;
 
 async function createTransporter(port, auth) {
   return nodemailer.createTransport({

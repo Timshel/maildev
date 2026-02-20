@@ -33,6 +33,7 @@
     "start": "npm run build && node ./bin/maildev",
     "test": "prettier . -c && npm run build && nyc _mocha --exit --timeout 5000",
     "test:debug": "npm run build && nyc _mocha --exit --timeout 5000",
+    "test:only": "nyc _mocha --exit --timeout 5000",
     "lint": "prettier . -c",
     "lint:fix": "prettier . -w",
     "dev": "npm run build && node ./scripts/dev.js && npm run css-watch",

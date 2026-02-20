@@ -12,7 +12,7 @@ const nodemailer = require("nodemailer");
 
 const MailDev = require("../dist/index").MailDev;
 
-const port = 9025;
+const port = 9026;
 
 const defaultMailDevOpts = {
   silent: true,
