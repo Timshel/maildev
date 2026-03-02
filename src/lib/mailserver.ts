@@ -487,14 +487,12 @@ function createMailDir(mailDir: string) {
 async function getDiskEmail(mailDir: string, id: string): Promise<Mail> {
   const emlPath = path.join(mailDir, id + ".eml");
   const data = await pfs.readFile(emlPath, "utf8");
+  const stat = await pfs.stat(emlPath);
   const parsedMail = await mailParser(data);
-  return buildMail(mailDir, id, parsedMail);
+  return buildMail(id, parsedMail, stat.size);
 }
 
-async function buildMail(mailDir: string, id: string, parsedMail: ParsedMail): Promise<Mail> {
-  const emlPath = path.join(mailDir, id + ".eml");
-  const stat = await pfs.stat(emlPath);
-
+async function buildMail(id: string, parsedMail: ParsedMail, size: number): Promise<Mail> {
   const envelope = {
     id: id,
     from: parsedMail.from,
@@ -509,8 +507,8 @@ async function buildMail(mailDir: string, id: string, parsedMail: ParsedMail): P
     id: envelope.id,
     envelope,
     calculatedBcc: calculateBcc(envelope.to, parsedMail.to, parsedMail.cc),
-    size: stat.size,
-    sizeHuman: utils.formatBytes(stat.size),
+    size,
+    sizeHuman: utils.formatBytes(size),
     ...parsedMail,
   };
 }
@@ -549,18 +547,24 @@ async function saveEmailToStore(mailServer: MailServer, mail: Mail): Promise<voi
 async function handleDataStream(mailServer: MailServer, stream, session, callback): Promise<void> {
   const id = utils.makeId();
   const emlStream = fs.createWriteStream(path.join(mailServer.mailDir, id + ".eml"));
+  let size = 0;
 
   const pt = new PassThrough();
   pt.on("data", (data) => {
+    size += data.length;
     emlStream.write(data);
   });
 
-  stream.on("end", () => {
-    emlStream.end();
-    callback(null, "Message queued as " + id);
+  let streamEnd = new Promise<void>((resolve) => {
+    stream.on("end", () => {
+      emlStream.end();
+      callback(null, "Message queued as " + id);
+      resolve();
+    });
   });
 
   const parsed = await mailParser(stream.pipe(pt));
-  const mail = await buildMail(mailServer.mailDir, id, parsed);
+  await streamEnd;
+  const mail = await buildMail(id, parsed, size);
   return saveEmailToStore(mailServer, mail);
 }
