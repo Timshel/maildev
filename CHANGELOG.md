@@ -1,3 +1,9 @@
+## 3.2.15
+
+- Fix race condition
+  MailServer.handleDataStream compute size instead of using stat
+- Updgrade dependencies
+
 ## 3.2.14
 
 - Remove `--omit=dev` from release
