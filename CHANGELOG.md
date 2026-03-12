@@ -1,3 +1,7 @@
+## 3.2.16
+
+- Updgrade dependencies
+
 ## 3.2.15
 
 - Fix race condition
