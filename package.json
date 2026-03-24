@@ -1,7 +1,7 @@
 {
   "name": "@timshel_npm/maildev",
   "description": "SMTP Server with async API and Web Interface for viewing and testing emails during development",
-  "version": "3.2.16",
+  "version": "3.2.17",
   "keywords": [
     "email",
     "e-mail",
@@ -64,17 +64,18 @@
     "cors": "2.8.6",
     "dompurify": "3.3.3",
     "express": "5.2.1",
-    "jsdom": "28.1.0",
-    "mailparser": "3.9.4",
+    "jsdom": "29.0.1",
+    "mailparser": "3.9.5",
     "mime": "4.1.0",
-    "nodemailer": "8.0.2",
-    "smtp-server": "3.18.1",
+    "nodemailer": "8.0.3",
+    "smtp-server": "3.18.2",
     "socket.io": "4.8.3",
     "wildstring": "1.0.9"
   },
   "overrides": {
-    "diff": "8.0.3",
-    "serialize-javascript": "7.0.4"
+    "diff": "8.0.4",
+    "serialize-javascript": "7.0.4",
+    "socket.io-parser": "4.2.6"
   },
   "devDependencies": {
     "@types/express": "5.0.6",
@@ -90,7 +91,7 @@
     "sass": "1.98.0",
     "ts-node": "10.9.2",
     "ts-node-dev": "2.0.0",
-    "typescript": "5.9.3"
+    "typescript": "6.0.2"
   },
   "engines": {
     "node": ">=20.0.0"
