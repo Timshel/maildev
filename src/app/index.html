@@ -26,42 +26,41 @@
                 <div class="sidebar-header">
                     <div class="brand-container">
                         <a class="brand ng-cloak" href="#/">
-                            <i class="fas fa-envelope"></i>
+                            <span class="fa7 fa7-solid--envelope"></span>
                             <span class="brand-text">MailDev</span>
+                            <span class="brand-unread ng-cloak" title="Total emails count (+ unread emails count)" ng-if="items && items.length" ng-click="toggleHeaderCountsUnread()">
+                                {{items.length}} {{ unreadItems > 0 ? ' (+' + unreadItems + ')' : '' }}
+                            </span>
                         </a>
-                        <span class="brand-unread ng-cloak" title="Total emails count (+ unread emails count)" ng-if="items && items.length" ng-click="toggleHeaderCountsUnread()">
-                            {{items.length}} {{ unreadItems > 0 ? ' (+' + unreadItems + ')' : '' }}
-                        </span>
                     </div>
 
                     <div class="header-nav  ng-cloak" >
                         <ul class="header-nav-list">
                             <li class="header-nav-item">
                                 <a ng-click="refreshList()" href="" class="header-nav-item-link" title="Refresh emails">
-                                    <i class="fas fa-sync"></i>
+                                    <span class="fa7 fa7-solid--sync"></span>
                                 </a>
                             </li>
                             <li class="header-nav-item">
                                 <a ng-click="markReadAll()" href="" class="header-nav-item-link" title="Mark all emails as read">
-                                    <i class="fas fa-check-double"></i>
+                                    <span class="fa7 fa7-solid--check-double"></span>
                                 </a>
                             </li>
                             <li class="header-nav-item">
                                 <a  ng-click="deleteAll()" href="" class="header-nav-item-link" title="Delete all emails">
-                                    <i ng-if="deleteAllSafeguard" class="fas fa-trash-alt"></i>
-                                    <i ng-if="!deleteAllSafeguard" class="fas fa-trash-alt danger"></i>
+                                    <span ng-if="deleteAllSafeguard" class="fa7 fa7-solid--trash-alt"></span>
+                                    <span ng-if="!deleteAllSafeguard" class="fa7 fa7-solid--trash-alt danger"></span>
                                 </a>
                             </li>
                             <li class="header-nav-item">
                                 <a ng-click="toggleDarkTheme()" href="" class="header-nav-item-link" title="Toggle between light and dark theme">
-
-                                    <i ng-if="settings.darkThemeEnabled" class="fas fa-sun"></i>
-                                    <i ng-if="!settings.darkThemeEnabled" class="fas fa-moon"></i>
+                                    <span ng-if="settings.darkThemeEnabled" class="fa7 fa7-solid--sun"></span>
+                                    <span ng-if="!settings.darkThemeEnabled" class="fa7 fa7-solid--moon"></span>
                                 </a>
                             </li>
                             <li class="header-nav-item">
                                 <a ng-click="toggleNavMore($event)" href="" class="header-nav-item-link" title="Additional configuration">
-                                    <i class="fas fa-cog"></i>
+                                    <span class="fa7 fa7-solid--cog"></span>
                                 </a>
                             </li>
                         </ul>
@@ -112,8 +111,8 @@
 
                 <div class="sidebar-emails-container ">
                     <div class="search-container ng-cloak">
+                        <span class="fa7 fa7-solid--search search-icon"></span>
                         <input type="text" ng-model="search" class="search-input" placeholder="Search...">
-                        <i class="fas fa-search search-icon"></i>
                     </div>
                     <div class="sidebar-scrollable-content ng-cloak">
 
@@ -129,7 +128,7 @@
                             <li ng-repeat="item in items | orderBy:'date':!reverse | filter: search " class="email-item  email-{{item.id}} " ng-class="{current: item.id === currentItemId, read: item.isRead, unread: !item.isRead}">
                                 <a href="#/email/{{item.id}}" class="email-item-link">
                                     <span class="title">
-                                        {{item.subject}}<span ng-hide="!item.hasAttachment">&nbsp;<i class="fas fa-paperclip" ></i></span>
+                                        {{item.subject}}<span ng-hide="!item.hasAttachment" class="fa7 fa7-solid--paperclip"></span>
                                         <span class="title-subline" title="{{item.to}}">
                                             To:&nbsp;{{item.to.0.address}}&nbsp;<span ng-if="item.to.length > 1">+{{item.to.length-1}}</span>
                                         </span>

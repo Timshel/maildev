@@ -7,61 +7,60 @@
         ng-click="toggleDropdown($event, 'display')"
         ng-class="{ open: dropdownOpen == 'display' }"
       >
-        <span ng-if="!panelVisibility || panelVisibility === 'html'"><i class="fas fa-file-code"></i> HTML</span>
-        <span ng-if="panelVisibility === 'plain'"><i class="fas fa-file-alt"></i> Text</span>
-        <span ng-if="panelVisibility === 'attachments'"><i class="fas fa-paperclip"></i> Attachments</span>
-        <span ng-if="panelVisibility === 'headers'"><i class="fas fa-th-list"></i> Headers</span>
-        <span ng-if="panelVisibility === 'source'"><i class="fas fa-code"></i> Source</span>
+        <span ng-if="!panelVisibility || panelVisibility === 'html'" class="fa7 fa7-solid--file-code"></span>
+        <span ng-if="!panelVisibility || panelVisibility === 'html'">HTML</span>
+
+        <span ng-if="panelVisibility === 'plain'" class="fa7 fa7-solid--file-alt"></span>
+        <span ng-if="panelVisibility === 'plain'">Text</span>
+
+        <span ng-if="panelVisibility === 'attachments'" class="fa7 fa7-solid--paperclip"></span>
+        <span ng-if="panelVisibility === 'attachments'">Attachments</span>
+
+        <span ng-if="panelVisibility === 'headers'" class="fa7 fa7-solid--th-list"></span>
+        <span ng-if="panelVisibility === 'headers'">Headers</span>
+
+        <span ng-if="panelVisibility === 'source'" class="fa7 fa7-solid--code"></span>
+        <span ng-if="panelVisibility === 'source'">Source</span>
       </a>
       <ul class="dropdown-menu">
         <li>
             <a href="" class=""
               ng-click="show('html')"
               ng-class="{ active: panelVisibility == 'html', disabled: !item.html }">
-                <span>
-                  <i class="fas fa-file-code"></i>
-                  HTML
-                </span>
+                <span class="fa7 fa7-solid--file-code"></span>
+                <span>HTML</span>
             </a>
         </li>
         <li>
             <a href="" class=""
               ng-click="show('plain')"
               ng-class="{ active: panelVisibility == 'plain', disabled: !item.text  }">
-                <span>
-                  <i class="fas fa-file-alt"></i>
-                  Text
-                </span>
+                <span class="fa7 fa7-solid--file-alt"></span>
+                <span>Text</span>
             </a>
         </li>
         <li>
             <a href="" class=""
               ng-click="show('attachments')"
               ng-class="{ active: panelVisibility == 'attachments', disabled: !item.attachments }">
-                <span>
-                  <i class="fas fa-paperclip"></i>
-                  Attachments
-                </span>
+                <span class="fa7 fa7-solid--paperclip"></span>
+                <span>Attachments</span>
             </a>
         </li>
         <li>
             <a href="" class=""
               ng-click="show('headers')"
               ng-class="{ active: panelVisibility == 'headers' }">
-                <span>
-                  <i class="fas fa-th-list"></i>
-                  Headers
-                </span>
+                <span class="fa7 fa7-solid--th-list"></span>
+                <span>Headers</span>
             </a>
         </li>
         <li>
             <a href="" class=""
               ng-click="show('source')"
               ng-class="{ active: panelVisibility == 'source' }">
-                <span>
-                  <i class="fas fa-code"></i>
-                  Source ({{item.sizeHuman}})
-                </span>
+                <span class="fa7 fa7-solid--code"></span>
+                <span>Source ({{item.sizeHuman}})</span>
             </a>
         </li>
       </ul>
@@ -73,15 +72,22 @@
       <a href="" class="dropdown-trigger"
         ng-click="toggleDropdown($event, 'viewport')"
         ng-class="{ open: dropdownOpen == 'viewport', disabled: panelVisibility != 'html' }">
-        <!--
-        <span ng-if="iframeSize == null"><i class="fas fa-ruler-combined"></i> 100%</span> -->
-        <span ng-if="iframeSize == null"><i class="fas fa-desktop"></i> 100%</span>
-        <span ng-if="iframeSize == '1440px'"><i class="fas fa-desktop"></i> 1440px</span>
-        <span ng-if="iframeSize == '1024px'"><i class="fas fa-tablet-alt"></i> 1024px</span>
-        <span ng-if="iframeSize == '768px'"><i class="fas fa-tablet-alt"></i> 768px</span>
-        <span ng-if="iframeSize == '425px'"><i class="fas fa-mobile-alt"></i> 425px</span>
-        <span ng-if="iframeSize == '375px'"><i class="fas fa-mobile-alt"></i> 375px</span>
-        <span ng-if="iframeSize == '320px'"><i class="fas fa-mobile-alt"></i> 320px</span>
+        <span ng-if="iframeSize == null" class="fa7 fa7-solid--desktop"></span>
+        <span ng-if="iframeSize == null">100%</span>
+        <span ng-if="iframeSize == '1440px'" class="fa7 fa7-solid--desktop"></span>
+        <span ng-if="iframeSize == '1440px'">1440px</span>
+
+        <span ng-if="iframeSize == '1024px'" class="fa7 fa7-solid--tablet-alt"></span>
+        <span ng-if="iframeSize == '1024px'">1024px</span>
+        <span ng-if="iframeSize == '768px'" class="fa7 fa7-solid--tablet-alt">
+        <span ng-if="iframeSize == '768px'"></span> 768px</span>
+
+        <span ng-if="iframeSize == '425px'" class="fa7 fa7-solid--mobile-alt"></span>
+        <span ng-if="iframeSize == '425px'">425px</span>
+        <span ng-if="iframeSize == '375px'" class="fa7 fa7-solid--mobile-alt"></span>
+        <span ng-if="iframeSize == '375px'">375px</span>
+        <span ng-if="iframeSize == '320px'" class="fa7 fa7-solid--mobile-alt"></span>
+        <span ng-if="iframeSize == '320px'">320px</span>
 
       </a>
       <ul class="dropdown-menu">
@@ -90,70 +96,56 @@
             <a href="" class=""
               ng-click="resize()"
               ng-class="{ active: iframeSize == null }">
-                <span>
-                  <i class="fas fa-desktop"></i>
-                  100%
-                </span>
+                <span class="fa7 fa7-solid--desktop"></span>
+                <span>100%</span>
             </a>
         </li>
         <li>
             <a href="" class=""
               ng-click="resize('1440px')"
               ng-class="{ active: iframeSize == '1440px' }">
-                <span>
-                  <i class="fas fa-desktop"></i>
-                  1440px
-                </span>
+                <span class="fa7 fa7-solid--desktop"></span>
+                <span>1440px</span>
             </a>
         </li>
         <li>
             <a href="" class=""
               ng-click="resize('1024px')"
               ng-class="{ active: iframeSize == '1024px' }">
-                <span>
-                  <i class="fas fa-tablet-alt"></i>
-                  1024px
-                </span>
+                <span class="fa7 fa7-solid--tablet-alt"></span>
+                <span>1024px</span>
             </a>
         </li>
         <li>
             <a href="" class=""
               ng-click="resize('768px')"
               ng-class="{ active: iframeSize == '768px' }">
-                <span>
-                  <i class="fas fa-tablet-alt"></i>
-                  768px
-                </span>
+                <span class="fa7 fa7-solid--tablet-alt"></span>
+                <span>768px</span>
             </a>
         </li>
         <li>
             <a href="" class=""
               ng-click="resize('425px')"
               ng-class="{ active: iframeSize == '425px' }">
-                <span>
-                  <i class="fas fa-mobile-alt"></i>
-                  425px
-                </span>
+                <span class="fa7 fa7-solid--mobile-alt"></span>
+                <span>425px</span>
             </a>
         </li>
         <li>
             <a href="" class=""
               ng-click="resize('375px')"
               ng-class="{ active: iframeSize == '375px' }">
-                <span>
-                  <i class="fas fa-mobile-alt"></i>
-                  375px
-                </span>
+                <span class="fa7 fa7-solid--mobile-alt"></span>
+                <span>375px</span>
             </a>
         </li>
         <li>
             <a href="" class=""
               ng-click="resize('320px')"
               ng-class="{ active: iframeSize == '320px' }">
-                <span>
-                  <i class="fas fa-mobile-alt"></i>
-                  320px
-                </span>
+                <span class="fa7 fa7-solid--mobile-alt"></span>
+                <span>320px</span>
             </a>
         </li>
       </ul>
@@ -162,10 +154,8 @@
 
     <li>
         <a href="email/{{item.id}}/download" class="">
-          <span>
-            <i class="fas fa-cloud-download-alt"></i>
-            Download
-          </span>
+          <span class="fa7 fa7-solid--cloud-download-alt"></span>
+          <span>Download</span>
         </a>
     </li>
 
@@ -177,30 +167,24 @@
         ng-click="toggleDropdown($event, 'relay')"
         ng-class="{ open: dropdownOpen == 'relay', disabled: !config.isOutgoingEnabled }"
       >
-        <span>
-          <i class="fas fa-paper-plane"></i>
-          Relay
-        </span>
+        <span class="fa7 fa7-solid--paper-plane"></span>
+        <span>Relay</span>
       </a>
       <ul class="dropdown-menu">
         <li>
           <a href="" class=""
             ng-click="relay(item)"
             ng-class="{ disabled: !config.isOutgoingEnabled }">
-              <span>
-                <i class="fas fa-paper-plane"></i>
-                Relay
-              </span>
+              <span class="fa7 fa7-solid--paper-plane"></span>
+              <span>Relay</span>
           </a>
         </li>
         <li>
           <a href="" class=""
             ng-click="relayTo(item)"
             ng-class="{ disabled: !config.isOutgoingEnabled }">
-              <span>
-                <i class="fas fa-paper-plane"></i>
-                Relay to...
-              </span>
+              <span class="fa7 fa7-solid--paper-plane"></span>
+              <span>Relay to...</span>
           </a>
         </li>
       </ul>
@@ -212,10 +196,8 @@
       <a href="" class=""
         ng-click="delete(item)"
       >
-        <span>
-          <i class="fas fa-trash-alt"></i>
-          Delete
-        </span>
+        <span class="fa7 fa7-solid--trash-alt"></span>
+        <span>Delete</span>
       </a>
     </li>
 
