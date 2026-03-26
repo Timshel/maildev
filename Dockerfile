@@ -11,7 +11,6 @@ FROM base AS build
 WORKDIR /root
 COPY . .
 RUN npm install typescript -g \
-  && npm install sass -g \
   && npm ci --omit=dev --ignore-scripts \
   && npm prune \
   && npm cache clean --force \
