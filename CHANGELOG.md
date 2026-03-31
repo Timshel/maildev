@@ -1,3 +1,12 @@
+## 3.2.18
+
+- Upgrade dependencies
+- Upgrade app dependencies
+  - Angular `v1.2.32`
+  - Socket.IO `v4.8.3`
+- Remove SASS preprocessing/dependency
+- Include only needed Font-Awesome icons
+
 ## 3.2.17
 
 - Updgrade dependencies
