@@ -63,17 +63,19 @@
     "dompurify": "3.3.3",
     "express": "5.2.1",
     "jsdom": "29.0.1",
-    "mailparser": "3.9.5",
+    "mailparser": "3.9.6",
     "mime": "4.1.0",
-    "nodemailer": "8.0.3",
-    "smtp-server": "3.18.2",
+    "nodemailer": "8.0.4",
+    "smtp-server": "3.18.3",
     "socket.io": "4.8.3",
     "wildstring": "1.0.9"
   },
   "overrides": {
+    "brace-expansion": "5.0.5",
     "diff": "8.0.4",
-    "serialize-javascript": "7.0.4",
-    "socket.io-parser": "4.2.6"
+    "path-to-regexp": "8.4.1",
+    "picomatch": "4.0.4",
+    "serialize-javascript": "7.0.5"
   },
   "devDependencies": {
     "@types/express": "5.0.6",
