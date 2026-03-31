@@ -370,7 +370,7 @@
     .header-nav-more-menu.header-nav-more-menu {
         box-sizing: border-box;
         position: absolute;
-        top: 1.5em;
+        top: 2.8em;
         right: 0;
         min-width: 14em;
 
@@ -933,6 +933,10 @@
             display: inline-block;
             justify-content: start;
             vertical-align: sub;
+        }
+
+        &.open {
+            display: block;
         }
     }
     .dropdown-menu.dropdown-menu.dropdown-menu li a {
