@@ -1,3 +1,7 @@
+## 3.2.19
+- Upgrade dependencies
+- Fix in memory `read` status (Lost on restart or when calling `/reloadMailsFromDirectory`)
+
 ## 3.2.18
 
 - Upgrade dependencies
