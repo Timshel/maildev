@@ -32,9 +32,8 @@ export function routes(app, mailserver: MailServer, basePathname: string) {
   // Get single email
   router.get("/email/:id", function (req, res) {
     mailserver
-      .getEmail(req.params.id)
+      .getEmail(req.params.id, true)
       .then((mail) => {
-        mail.envelope.isRead = true; // Mark the email as 'read'
         res.status(200).json(mail);
       })
       .catch((err) => res.status(404).json({ error: err.message }));
@@ -124,7 +123,7 @@ export function routes(app, mailserver: MailServer, basePathname: string) {
   // Relay the email
   router.post("/email/:id/relay{/:relayTo}", function (req, res) {
     mailserver
-      .getEmail(req.params.id)
+      .getEmail(req.params.id, false)
       .then((mail) => {
         if (req.params.relayTo) {
           if (emailRegexp.test(req.params.relayTo)) {

@@ -263,13 +263,14 @@ export class MailServer {
   /**
    * Get an email by id
    */
-  async getEmail(id: string): Promise<Mail> {
+  async getEmail(id: string, setRead: boolean): Promise<Mail> {
     const envelope = this.store.find(function (elt) {
       return elt.id === id;
     });
 
     if (envelope) {
-      return getDiskEmail(this.mailDir, envelope.id).then((mail) => {
+      envelope.isRead = setRead || envelope.isRead;
+      return getDiskEmail(this.mailDir, envelope.id, envelope.isRead).then((mail) => {
         if (mail.html) {
           // sanitize html
           const window = new JSDOM("").window;
@@ -306,7 +307,7 @@ export class MailServer {
   async getEmailHTML(id: string, baseUrl: string = ""): Promise<string> {
     baseUrl = baseUrl ? "//" + baseUrl : "";
 
-    const mail = await this.getEmail(id);
+    const mail = await this.getEmail(id, false);
 
     if (typeof mail.html === "string") {
       var html: string = mail.html;
@@ -347,7 +348,7 @@ export class MailServer {
 
   getAllEmail(): Promise<Mail[]> {
     const emails = this.store.map((elt) => {
-      return this.getEmail(elt.id);
+      return this.getEmail(elt.id, false);
     });
     return Promise.all(emails);
   }
@@ -403,7 +404,7 @@ export class MailServer {
    * Returns the content type and a readable stream of the file
    */
   async getEmailAttachment(id: string, filename: string): Promise<Attachment> {
-    const mail = await this.getEmail(id);
+    const mail = await this.getEmail(id, false);
 
     if (mail.attachments.length === 0) {
       throw new Error("Email has no attachments");
@@ -455,7 +456,7 @@ export class MailServer {
 
       let saved = chunk.map(async function (file) {
         const id = path.parse(file).name;
-        const email = await getDiskEmail(self.mailDir, id);
+        const email = await getDiskEmail(self.mailDir, id, false);
         return saveEmailToStore(self, email);
       });
 
@@ -484,15 +485,20 @@ function createMailDir(mailDir: string) {
   logger.info("MailDev using directory %s", mailDir);
 }
 
-async function getDiskEmail(mailDir: string, id: string): Promise<Mail> {
+async function getDiskEmail(mailDir: string, id: string, isRead: boolean): Promise<Mail> {
   const emlPath = path.join(mailDir, id + ".eml");
   const data = await pfs.readFile(emlPath, "utf8");
   const stat = await pfs.stat(emlPath);
   const parsedMail = await mailParser(data);
-  return buildMail(id, parsedMail, stat.size);
+  return buildMail(id, parsedMail, stat.size, isRead);
 }
 
-async function buildMail(id: string, parsedMail: ParsedMail, size: number): Promise<Mail> {
+async function buildMail(
+  id: string,
+  parsedMail: ParsedMail,
+  size: number,
+  isRead: boolean,
+): Promise<Mail> {
   const envelope = {
     id: id,
     from: parsedMail.from,
@@ -500,7 +506,7 @@ async function buildMail(id: string, parsedMail: ParsedMail, size: number): Prom
     date: parsedMail.date,
     subject: parsedMail.subject,
     hasAttachment: parsedMail.attachments.length > 0,
-    isRead: false,
+    isRead,
   };
 
   return {
@@ -565,6 +571,6 @@ async function handleDataStream(mailServer: MailServer, stream, session, callbac
 
   const parsed = await mailParser(stream.pipe(pt));
   await streamEnd;
-  const mail = await buildMail(id, parsed, size);
+  const mail = await buildMail(id, parsed, size, false);
   return saveEmailToStore(mailServer, mail);
 }
