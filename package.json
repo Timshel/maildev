@@ -60,26 +60,25 @@
     "commander": "14.0.3",
     "compression": "1.8.1",
     "cors": "2.8.6",
-    "dompurify": "3.3.3",
+    "dompurify": "3.4.1",
     "express": "5.2.1",
-    "jsdom": "29.0.1",
-    "mailparser": "3.9.6",
+    "jsdom": "29.1.0",
+    "mailparser": "3.9.8",
     "mime": "4.1.0",
-    "nodemailer": "8.0.4",
-    "smtp-server": "3.18.3",
+    "nodemailer": "8.0.7",
+    "smtp-server": "3.18.4",
     "socket.io": "4.8.3",
     "wildstring": "1.0.9"
   },
   "overrides": {
-    "brace-expansion": "5.0.5",
     "diff": "8.0.4",
-    "path-to-regexp": "8.4.1",
-    "picomatch": "4.0.4",
-    "serialize-javascript": "7.0.5"
+    "follow-redirects": "1.16.0",
+    "serialize-javascript": "7.0.5",
+    "uuid": "14.0.0"
   },
   "devDependencies": {
     "@types/express": "5.0.6",
-    "@types/node": "20.19.11",
+    "@types/node": "20.19.39",
     "expect": "30.3.0",
     "http-proxy-middleware": "3.0.5",
     "jest": "30.3.0",
@@ -87,10 +86,10 @@
     "mocha": "11.7.5",
     "nodemon": "3.1.14",
     "nyc": "18.0.0",
-    "prettier": "3.8.1",
+    "prettier": "3.8.3",
     "ts-node": "10.9.2",
     "ts-node-dev": "2.0.0",
-    "typescript": "6.0.2"
+    "typescript": "6.0.3"
   },
   "engines": {
     "node": ">=20.0.0"
