@@ -1,7 +1,13 @@
+## 3.2.21
+
+- Missed version update, release for cleanup
+
 ## 3.2.20
+
 - Upgrade dependencies
 
 ## 3.2.19
+
 - Upgrade dependencies
 - Fix in memory `read` status (Lost on restart or when calling `/reloadMailsFromDirectory`)
 
