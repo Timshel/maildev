@@ -11,7 +11,7 @@ FROM base AS build
 WORKDIR /root
 COPY . .
 RUN npm install typescript -g \
-  && npm ci --omit=dev --ignore-scripts \
+  && npm ci --omit=dev --ignore-scripts --allow-git=none --allow-remote=none \
   && npm prune \
   && npm cache clean --force \
   && npm run build
