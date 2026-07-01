@@ -1,3 +1,8 @@
+## 3.3.1
+
+- Upgrade dependencies
+- Drop node 20 support
+
 ## 3.2.21
 
 - Missed version update, release for cleanup
