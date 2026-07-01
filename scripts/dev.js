@@ -2,10 +2,11 @@ const nodemon = require("nodemon");
 const sendEmails = require("./send.js");
 
 nodemon({
-  script: "./bin/maildev",
+  exec: "npm run build && node ./bin/maildev",
   verbose: true,
   watch: ["src/*"],
   args: ["--verbose"],
+  ext: ".js, .ts, .html, .css",
 })
   .on("start", function () {
     setTimeout(sendEmails, 1000);

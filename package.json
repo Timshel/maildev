@@ -36,7 +36,7 @@
     "test:only": "nyc _mocha --exit --timeout 5000",
     "lint": "prettier . -c",
     "lint:fix": "prettier . -w",
-    "dev": "npm run build && node ./scripts/dev.js",
+    "dev": "node ./scripts/dev.js",
     "docker-build": "./src/scripts/dockerBuild.sh",
     "docker-run": "docker run --rm -p 1080:1080 -p 1025:1025 maildev/maildev:$npm_package_version",
     "docker-push": "./src/scripts/dockerPush.sh",
