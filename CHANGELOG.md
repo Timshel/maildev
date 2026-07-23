@@ -1,3 +1,8 @@
+## 3.3.3
+
+- Fix typescript version in docker image
+
+
 ## 3.3.2
 
 - Upgrade dependencies
