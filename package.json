@@ -1,7 +1,7 @@
 {
   "name": "@timshel_npm/maildev",
   "description": "SMTP Server with async API and Web Interface for viewing and testing emails during development",
-  "version": "3.3.1",
+  "version": "3.3.2",
   "keywords": [
     "email",
     "e-mail",
@@ -60,35 +60,37 @@
     "commander": "15.0.0",
     "compression": "1.8.1",
     "cors": "2.8.6",
-    "dompurify": "3.4.11",
+    "dompurify": "3.4.12",
     "express": "5.2.1",
     "jsdom": "29.1.1",
-    "mailparser": "3.9.12",
+    "mailparser": "3.9.14",
     "mime": "4.1.0",
     "nodemailer": "9.0.3",
-    "smtp-server": "3.19.1",
+    "smtp-server": "3.19.2",
     "socket.io": "4.8.3",
     "wildstring": "1.0.9"
   },
   "overrides": {
-    "@babel/core": "8.0.1",
+    "brace-expansion": "5.0.8",
+    "body-parser": "2.3.0",
     "diff": "8.0.4",
-    "js-yaml": "5.2.0",
+    "engine.io": "6.6.9",
+    "js-yaml": "5.2.1",
     "serialize-javascript": "7.0.7",
     "uuid": "14.0.1",
-    "ws": "8.21.0"
+    "ws": "8.21.1"
   },
   "devDependencies": {
     "@types/express": "5.0.6",
     "@types/node": "20.19.39",
     "expect": "30.4.1",
-    "http-proxy-middleware": "4.1.1",
+    "http-proxy-middleware": "4.2.0",
     "jest": "30.4.2",
     "jest-mock": "30.4.1",
     "mocha": "11.7.6",
     "nodemon": "3.1.14",
     "nyc": "18.0.0",
-    "prettier": "3.9.4",
+    "prettier": "3.9.6",
     "typescript": "6.0.3"
   },
   "engines": {
