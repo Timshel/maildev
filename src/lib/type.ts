@@ -1,38 +1,9 @@
-import type * as MailParser from "mailparser";
-
-/**
- * Structured object for headers with arguments.
- *
- * `content-type: text/plain; CHARSET="UTF-8"` =>
- * ```
- * {
- *     "value": "text/plain",
- *     "params": {
- *         "charset": "UTF-8"
- *     }
- * }
- * ```
- */
-export interface StructuredHeader extends MailParser.StructuredHeader {
-  /**
-   * The main value.
-   */
-  value: string;
-  /**
-   * Additional arguments.
-   */
-  params: { [key: string]: string };
-}
-
-/**
- * Possible types of a header value.
- */
-export type HeaderValue = string[];
+import type * as PostalMime from "postal-mime";
 
 /**
  * A Map object with lowercase header keys.
  */
-export type HeadersMap = Map<string, HeaderValue>;
+export type HeadersMap = Map<string, String>;
 
 /**
  * Address object.
@@ -64,6 +35,10 @@ export interface EmailAddress {
    * The name part of the email/group.
    */
   name: string;
+  /**
+   * The parent group if defined
+   */
+  group?: string | undefined;
 }
 
 /**
@@ -72,20 +47,18 @@ export interface EmailAddress {
 export type Headers = {
   date: Date | undefined;
 
-  contentType: StructuredHeader | undefined;
-  contentDisposition: StructuredHeader | undefined;
-  dkimSignature: StructuredHeader[];
+  contentType: string | undefined;
+  contentDisposition: string | undefined;
+  dkimSignature: string | undefined;
 
-  from: AddressObject | undefined;
-  to: AddressObject | undefined;
-  cc: AddressObject | undefined;
-  bcc: AddressObject | undefined;
-  sender: AddressObject | undefined;
-  replyTo: AddressObject | undefined;
-  deliveredTo: AddressObject | undefined;
-  dispositionNotificationTo: AddressObject | undefined;
+  from?: EmailAddress;
+  to: EmailAddress[];
+  cc: EmailAddress[];
+  bcc: EmailAddress[];
+  sender?: EmailAddress;
+  replyTo: EmailAddress[];
+  deliveredTo?: string;
 
-  received: string[];
   priority: string | undefined;
   headers: HeadersMap;
 };
@@ -101,7 +74,7 @@ export type HeaderLines = ReadonlyArray<{
 /**
  * COmmon part of the Attachment object.
  */
-export interface Attachment extends MailParser.Attachment {
+export interface Attachment extends PostalMime.Attachment {
   /**
    * Message type.
    */
@@ -124,10 +97,6 @@ export interface Attachment extends MailParser.Attachment {
    * most probably `'attachment'`.
    */
   contentDisposition: string;
-  /**
-   * File name of the attachment.
-   */
-  filename?: string | undefined;
   /**
    * A Map value that holds MIME headers for the attachment node.
    */

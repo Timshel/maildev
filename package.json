@@ -54,7 +54,6 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@types/mailparser": "3.4.6",
     "addressparser": "1.0.1",
     "async": "3.2.6",
     "commander": "15.0.0",
@@ -63,7 +62,7 @@
     "dompurify": "3.4.12",
     "express": "5.2.1",
     "jsdom": "29.1.1",
-    "mailparser": "3.9.14",
+    "postal-mime": "2.7.5",
     "mime": "4.1.0",
     "nodemailer": "9.0.3",
     "smtp-server": "3.19.2",
