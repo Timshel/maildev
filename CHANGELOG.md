@@ -1,7 +1,11 @@
+## 3.3.4
+
+- Upgrade dependencies
+- run tests on nodejs 26
+
 ## 3.3.3
 
 - Fix typescript version in docker image
-
 
 ## 3.3.2
 
