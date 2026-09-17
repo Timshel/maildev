@@ -1,7 +1,7 @@
 {
   "name": "@timshel_npm/maildev",
   "description": "SMTP Server with async API and Web Interface for viewing and testing emails during development",
-  "version": "3.3.5",
+  "version": "3.3.6",
   "keywords": [
     "email",
     "e-mail",
@@ -31,9 +31,9 @@
     "build": "tsc --build && npm run copy-app",
     "copy-app": "mkdir -p dist && cp -r ./src/app ./dist",
     "start": "npm run build && node ./bin/maildev",
-    "test": "prettier . -c && npm run build && nyc _mocha --exit --timeout 5000",
-    "test:debug": "npm run build && nyc _mocha --exit --timeout 5000",
-    "test:only": "nyc _mocha --exit --timeout 5000",
+    "test": "prettier . -c && npm run build && nyc mocha --exit --timeout 5000",
+    "test:debug": "npm run build && nyc mocha --exit --timeout 5000",
+    "test:only": "nyc mocha --exit --timeout 5000",
     "lint": "prettier . -c",
     "lint:fix": "prettier . -w",
     "dev": "node ./scripts/dev.js",
@@ -58,37 +58,35 @@
     "addressparser": "1.0.1",
     "async": "3.2.6",
     "commander": "15.0.0",
-    "compression": "1.8.1",
+    "compression": "1.8.2",
     "cors": "2.8.6",
-    "dompurify": "3.4.14",
+    "dompurify": "3.4.15",
     "express": "5.2.1",
     "jsdom": "30.0.1",
-    "mailparser": "3.9.16",
+    "mailparser": "3.9.28",
     "mime": "4.1.0",
-    "nodemailer": "9.0.5",
-    "smtp-server": "3.19.3",
+    "nodemailer": "10.0.10",
+    "smtp-server": "3.19.13",
     "socket.io": "4.8.3",
     "wildstring": "1.0.9"
   },
   "overrides": {
-    "brace-expansion": "5.0.9",
-    "diff": "8.0.4",
-    "serialize-javascript": "7.1.0",
+    "qs": "6.16.0",
     "uuid": "14.0.2",
     "ws": "8.21.3"
   },
   "devDependencies": {
     "@types/express": "5.0.6",
     "@types/node": "22.13.14",
-    "expect": "30.4.1",
+    "expect": "30.5.1",
     "http-proxy-middleware": "4.2.0",
-    "jest": "30.4.2",
-    "jest-mock": "30.4.1",
-    "mocha": "11.8.0",
+    "jest": "30.5.1",
+    "jest-mock": "30.5.1",
+    "mocha": "12.0.1",
     "nodemon": "3.1.14",
     "nyc": "18.0.0",
-    "prettier": "3.9.6",
-    "typescript": "6.0.3"
+    "prettier": "3.9.7",
+    "typescript": "7.0.2"
   },
   "engines": {
     "node": ">=22.0.0"
@@ -109,3 +107,5 @@
     "printWidth": 100
   }
 }
+
+

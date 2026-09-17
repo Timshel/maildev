@@ -1,3 +1,7 @@
+## 3.3.6
+
+- Upgrade dependencies
+
 ## 3.3.5
 
 - Upgrade dependencies

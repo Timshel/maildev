@@ -30,8 +30,8 @@ Or can be installed using [Github](https://docs.npmjs.com/cli/v10/configuring-np
 Ex:
 ```json
 "devDependencies": {
-    "maildev": "github:timshel/maildev#3.3.5",
-    "maildev": "npm:@timshel_npm/maildev@^3.3.5"
+    "maildev": "github:timshel/maildev#3.3.6",
+    "maildev": "npm:@timshel_npm/maildev@^3.3.6"
 }
 ```
 

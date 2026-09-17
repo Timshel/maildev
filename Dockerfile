@@ -10,7 +10,7 @@ ENV MAILDEV_MAIL_DIRECTORY=/tmp/maildev
 FROM base AS build
 WORKDIR /root
 COPY . .
-RUN npm install typescript@6.0.3 -g \
+RUN npm install typescript@7.0.2 -g \
   && npm ci --omit=dev --ignore-scripts --allow-git=none --allow-remote=none \
   && npm prune \
   && npm cache clean --force \

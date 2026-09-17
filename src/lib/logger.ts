@@ -13,27 +13,27 @@ export function setLevel(level) {
 /**
  * The error method will always log to the console
  */
-export function error() {
-  console.error.apply(console, arguments);
+export function error(...args) {
+  console.error.apply(console, args);
 }
 
 /**
  * Log only when set to verbose (2)
  */
-export function log() {
+export function log(...args) {
   if (logLevel > 1) {
-    console.log.apply(console, arguments);
+    console.log.apply(console, args);
   }
 }
 
-export function info() {
+export function info(...args) {
   if (logLevel > 0) {
-    console.info.apply(console, arguments);
+    console.info.apply(console, args);
   }
 }
 
-export function warn() {
+export function warn(...args) {
   if (logLevel > 0) {
-    console.warn.apply(console, arguments);
+    console.warn.apply(console, args);
   }
 }
