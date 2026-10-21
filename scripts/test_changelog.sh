@@ -1,8 +1,8 @@
 # !/bin/bash
 
-LAST_TAG=$(git describe --abbrev=0 --tags HEAD)
+TAG_CURRENT=$(git describe --abbrev=0 --tags HEAD)
 
 echo "Test changelog output for latest tag:"
 echo "------------------------------------"
-sed -n "/## $LAST_TAG/,/##/p" CHANGELOG.md | grep -v "^##" | grep .
+sed -n "/## $TAG_CURRENT/,/##/p" CHANGELOG.md | grep -v "^##" | grep .
 echo "------------------------------------"

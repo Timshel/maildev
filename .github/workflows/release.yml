@@ -38,7 +38,7 @@ jobs:
           echo "TAG_CURRENT=$TAG_CURRENT" >> "$GITHUB_ENV"
 
           echo "CHANGELOG_MESSAGE<<EOF" >> $GITHUB_ENV
-          sed -n "/## $LAST_TAG/,/##/p" CHANGELOG.md | grep -v "^##" | grep . >> $GITHUB_ENV
+          sed -n "/## $TAG_CURRENT/,/##/p" CHANGELOG.md | grep -v "^##" | grep . >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
       - name: Create Release # https://github.com/softprops/action-gh-release
