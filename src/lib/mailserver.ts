@@ -54,7 +54,7 @@ export class MailServer {
   eventEmitter = new events.EventEmitter();
   mailEventSubjectMapper: (Mail) => string | undefined;
 
-  smtp: typeof SMTPServer;
+  smtp: SMTPServer;
   outgoing: Outgoing | undefined;
 
   private _reloadInProgress: Promise<void> | undefined = undefined;
@@ -190,11 +190,7 @@ export class MailServer {
   listen(): Promise<void> {
     const self = this;
     return new Promise((resolve, reject) => {
-      self.smtp.listen(self.port, self.host, (err) => {
-        if (err) {
-          reject(err);
-        }
-
+      self.smtp.listen(self.port, self.host, () => {
         logger.info("MailDev SMTP Server running at %s:%s", self.host, self.port);
         resolve();
       });

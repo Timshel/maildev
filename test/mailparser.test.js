@@ -144,7 +144,7 @@ describe("Mailparser General tests", () => {
     });
   });
 
-  it("Multiple in-reply-to fields", (done) => {
+  it("Multiple in-reply-to fields", async () => {
     const encodedText =
       "Content-type: text/plain\n" +
       "in-reply-to: <mail1>\n" +
@@ -152,12 +152,10 @@ describe("Mailparser General tests", () => {
       "\r" +
       "1234";
 
-    mailParser(encodedText).then((mail) => {
-      // Not in spec ? https://www.rfc-editor.org/rfc/rfc5322, max 1
-      // assert.deepStrictEqual(mail.inReplyTo, ["mail1", "mail3"]);
-      assert.deepStrictEqual(mail.inReplyTo, ["mail3"]);
-      done();
-    });
+    let mail = await mailParser(encodedText);
+
+    // Not in spec ? https://www.rfc-editor.org/rfc/rfc5322, max 1
+    assert.deepStrictEqual(mail.inReplyTo, ["mail1"]);
   });
 
   it("Reply To address", (done) => {
