@@ -1,3 +1,10 @@
+## 3.3.7
+
+- Upgrade dependencies
+- `npm audit` still report issues with:
+    - `braces` [vuln](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm) the author [comment](https://github.com/micromatch/braces/issues/70#issuecomment-5995348316)
+    - `sprintf-js` [vuln](https://github.com/advisories/GHSA-hp3w-g68c-fv3c) rejected on [nvd.nist.gov](https://nvd.nist.gov/vuln/detail/cve-2026-97058)
+
 ## 3.3.6
 
 - Upgrade dependencies
